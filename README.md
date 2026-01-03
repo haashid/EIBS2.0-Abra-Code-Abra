@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌐 WeilChain Nexus
+> **The Future of Composable Decentralized Intelligence**
 
-## Getting Started
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Status: Beta](https://img.shields.io/badge/Status-Beta-blue)
+![Network: WeilChain](https://img.shields.io/badge/Network-WeilChain-purple)
+![Tech: Next.js](https://img.shields.io/badge/Tech-Next.js-black)
 
-First, run the development server:
+## 🚀 The Vision
+**WeilChain Nexus** is not just a marketplace; it's an **execution layer for the decentralized web**. By bridging on-chain logic with off-chain computation, we enable users to build complex, verifiable workflows—**Pipelines**—that combine AI, data processing, and financial transactions into a single, seamless experience.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Traditional DApps are siloed. Nexus is **composable**. 
+Imagine taking a *Sentiment Analysis Applet*, piping its output into an *Automated Trading Bot*, and logging the result forever on the WeilChain blockchain. **That is Nexus.**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ✨ Key Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🧩 **Applet Marketplace**
+Discover a growing ecosystem of micro-services. From **AI Summarizers** to **Data Sanitizers**, finding the right tool is just a search away. Developers can monetize their code by registering applets directly on-chain.
 
-## Learn More
+### 🔗 **Visual Pipeline Builder**
+No coding required. Drag, drop, and connect applets to build powerful workflows.
+*   **Input**: Text, Images, CSVs.
+*   **Process**: Chain multiple applets logic together.
+*   **Output**: Actionable insights logged immutably.
 
-To learn more about Next.js, take a look at the following resources:
+### 🤖 **AI-Powered Integrations**
+Nexus ships with built-in AI capabilities. Run **Sentiment Analysis** and **Text Summarization** locally in the browser, verifiable by the community.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 📜 **Immutable Execution Logs**
+Every pipeline run is recorded on the **WeilChain**. Trust, but verify. We provide a transparent audit trail of every computation, ensuring accountability in a decentralized world.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🛠️ Technology Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+*   **Frontend**: Next.js 14, React, Tailwind CSS, Framer Motion
+*   **Blockchain**: WeilChain (Sepolia Compatible), Solidity
+*   **Tooling**: Hardhat, Wagmi, Ethers.js, Viem
+*   **AI Engine**: Sentiment.js, Custom Heuristics
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## ⚡ Getting Started
+
+### Prerequisites
+*   Node.js (v18+)
+*   MetaMask (or compatible Web3 Wallet)
+
+### Installation
+
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/haashid/EIBS2.0-Abra-Code-Abra.git
+    cd weilchain-nexus
+    ```
+
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    # Installs the Weil-SDK and core libraries
+    ```
+
+3.  **Run the Demo**
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) to launch the Nexus.
+
+---
+
+## 🌍 Deploying to WeilChain
+
+Want to run your own instance?
+
+1.  **Configure Environment**
+    Create a `.env` file:
+    ```env
+    PRIVATE_KEY=your_deployer_key
+    SEPOLIA_RPC_URL=https://rpc.sepolia.org
+    ```
+
+2.  **Deploy Contracts**
+    ```bash
+    npx hardhat run scripts/deploy.ts --network sepolia
+    ```
+
+3.  **Update Frontend**
+    Paste your new contract addresses into `src/config/contracts.ts` and restart the app.
+
+---
+
+## 🏆 Innovation & Impact
+
+WeilChain Nexus solves the **fragmentation problem** in Web3. By standardizing input/output schemas for applets, we allow disparate tools to talk to each other. This opens the door for:
+*   **Automated DAO Governance** based on social sentiment.
+*   **Decentralized content moderation** pipelines.
+*   **Trustless financial reporting** from raw data input.
+
+**Built for the Hackathon. Ready for the World.**
+
+---
+
+<p align="center">
+  Made with ❤️ by Haashid
+</p>
