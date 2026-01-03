@@ -16,6 +16,7 @@ export default function PipelinePage() {
     const [executionResult, setExecutionResult] = useState<string | null>(null);
     const [sentimentResult, setSentimentResult] = useState<any>(null);
     const [summaryResult, setSummaryResult] = useState<string | null>(null);
+    const [cryptoPriceResult, setCryptoPriceResult] = useState<string | null>(null);
 
     // Convert price string to bigint for compatibility with existing components
     const availableApplets = applets.map(a => ({
@@ -27,6 +28,7 @@ export default function PipelinePage() {
         setExecutionResult("processing");
         setSentimentResult(null);
         setSummaryResult(null);
+        setCryptoPriceResult(null);
 
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1500));
@@ -38,17 +40,69 @@ export default function PipelinePage() {
             setSentimentResult(result);
         }
 
-        // Logic for Applet ID 5: AI Summarizer (Heuristic)
+        // Logic for Applet ID 5: AI Summarizer (Hugging Face API + Fallback)
         if (appletIds.includes(5)) {
-            // Simple heuristic directly in client: take first 2 sentences
-            const sentences = inputData.match(/[^.!?]+[.!?]+/g) || [inputData];
-            const summary = sentences.slice(0, 2).join(" ");
-            setSummaryResult(summary || "Could not generate summary.");
+            try {
+                // Attempt to call Hugging Face Inference API
+                // Note: In a real deploy, use an env var: process.env.NEXT_PUBLIC_HF_TOKEN
+                const API_TOKEN = process.env.NEXT_PUBLIC_HF_TOKEN;
+
+                if (API_TOKEN) {
+                    const response = await fetch(
+                        "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
+                        {
+                            headers: { Authorization: `Bearer ${API_TOKEN}` },
+                            method: "POST",
+                            body: JSON.stringify({ inputs: inputData }),
+                        }
+                    );
+                    const result = await response.json();
+                    if (result && result[0] && result[0].summary_text) {
+                        setSummaryResult(result[0].summary_text);
+                    } else {
+                        throw new Error("Invalid API response");
+                    }
+                } else {
+                    // No Key? Throw to trigger fallback without error logging
+                    throw new Error("No API Key provided, using local fallback");
+                }
+            } catch (err) {
+                // FALLBACK: Simple heuristic directly in client
+                console.warn("Using local summarizer fallback:", err);
+                const sentences = inputData.match(/[^.!?]+[.!?]+/g) || [inputData];
+                const summary = sentences.slice(0, 2).join(" ");
+                setSummaryResult("(Local Fallback) " + (summary || "Could not generate summary."));
+            }
+        }
+
+        // Logic for Applet ID 6: Crypto Price Oracle (REAL API)
+        let paramCryptoPrice = null;
+        if (appletIds.includes(6)) {
+            try {
+                // Default to 'ethereum' if input is empty, or sanitize input
+                const coinId = inputData.trim().toLowerCase() || "ethereum";
+                const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
+                const data = await response.json();
+
+                if (data[coinId]) {
+                    paramCryptoPrice = `$${data[coinId].usd}`;
+                } else {
+                    paramCryptoPrice = "Error: Coin not found (try 'bitcoin' or 'ethereum')";
+                }
+            } catch (error) {
+                console.error("API Call Failed", error);
+                paramCryptoPrice = "API Error: Failed to fetch price";
+            }
         }
 
         // Log to history (Mock Persistence)
-        logExecution(appletIds, formatEther(totalPrice), { sentiment: sentimentResult, summary: summaryResult });
+        logExecution(appletIds, formatEther(totalPrice), {
+            sentiment: sentimentResult,
+            summary: summaryResult,
+            cryptoPrice: paramCryptoPrice
+        });
 
+        setCryptoPriceResult(paramCryptoPrice);
         setExecutionResult("success");
     };
 
@@ -76,31 +130,37 @@ export default function PipelinePage() {
                         <h2 className="text-2xl font-bold text-white mb-2">Execution Complete</h2>
                         <p className="text-gray-400 mb-6">Results have been logged to the blockchain.</p>
 
-                        {sentimentResult && (
-                            <div className="bg-gray-800/50 p-4 rounded-lg mb-6 text-left w-full max-w-sm border border-gray-700">
-                                <h3 className="text-sm font-bold text-gray-300 mb-2 uppercase">Analysis Output</h3>
-                                <div className="flex justify-between mb-1">
-                                    <span className="text-gray-400">Score:</span>
-                                    <span className={`font-mono font-bold ${sentimentResult.score > 0 ? 'text-green-400' : sentimentResult.score < 0 ? 'text-red-400' : 'text-gray-200'}`}>
-                                        {sentimentResult.score}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-400">Comparative:</span>
-                                    <span className="font-mono text-white">{sentimentResult.comparative.toFixed(2)}</span>
-                                </div>
-                                <div className="mt-2 text-xs text-gray-500">
-                                    Matched: {sentimentResult.words.join(", ") || "None"}
-                                </div>
-                            </div>
-                        )}
+                        {executionResult === "success" && (
+                            <div className="mt-8 bg-green-900/20 border border-green-800 rounded-xl p-6 animate-fade-in">
+                                <h4 className="text-xl font-bold text-green-400 mb-4">Pipeline Execution Successful</h4>
+                                <div className="space-y-2 text-gray-300 font-mono text-sm">
+                                    <p>Status: <span className="text-white">Completed</span></p>
+                                    <p>Transaction Hash: <span className="text-blue-400 break-all">0x{Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}</span></p>
 
-                        {summaryResult && (
-                            <div className="bg-gray-800/50 p-4 rounded-lg mb-6 text-left w-full max-w-sm border border-gray-700">
-                                <h3 className="text-sm font-bold text-gray-300 mb-2 uppercase">Abstract / Summary</h3>
-                                <p className="text-gray-300 text-sm italic border-l-2 border-purple-500 pl-3">
-                                    "{summaryResult}"
-                                </p>
+                                    {sentimentResult && (
+                                        <div className="mt-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
+                                            <p className="font-bold text-gray-400 mb-2">Sentiment Analysis Result:</p>
+                                            <p>Score: {sentimentResult.score}</p>
+                                            <p>Comparative: {sentimentResult.comparative.toFixed(2)}</p>
+                                        </div>
+                                    )}
+
+                                    {summaryResult && (
+                                        <div className="mt-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
+                                            <p className="font-bold text-gray-400 mb-2">AI Summary Result:</p>
+                                            <p>{summaryResult}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Added for Crypto Price Display */}
+                                    {/* Added for Crypto Price Display */}
+                                    {cryptoPriceResult && (
+                                        <div className="mt-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
+                                            <p className="font-bold text-yellow-400 mb-2">🔮 Crypto Oracle Result:</p>
+                                            <p className="text-2xl text-white">{cryptoPriceResult}</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 

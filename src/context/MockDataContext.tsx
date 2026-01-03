@@ -40,6 +40,7 @@ const INITIAL_APPLETS: Applet[] = [
     { id: 3, name: "Data Cleaner", description: "Cleans CSV data", price: "0.02", inputSchema: "CSV", outputSchema: "CSV", owner: "0x456..." },
     { id: 4, name: "Translator", description: "Translates text", price: "0.03", inputSchema: "Text", outputSchema: "Text", owner: "0x789..." },
     { id: 5, name: "AI Summarizer", description: "Summarizes long text", price: "0.08", inputSchema: "Text", outputSchema: "Text", owner: "0xDEF..." },
+    { id: 6, name: "Crypto Price Oracle", description: "Real-time ETH price from CoinGecko", price: "0.02", inputSchema: "Symbol (e.g. bitcoin)", outputSchema: "JSON", owner: "0xORA..." },
 ];
 
 const INITIAL_EXECUTIONS: ExecutionLog[] = [
