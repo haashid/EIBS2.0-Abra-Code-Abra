@@ -31,7 +31,7 @@ export default function PipelineBuilder({ availableApplets, onExecute, isConnect
         setPipeline(newPipeline);
     };
 
-    const totalPrice = pipeline.reduce((sum, applet) => sum + applet.price, 0n);
+    const totalPrice = pipeline.reduce((sum, applet) => sum + applet.price, BigInt(0));
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -114,8 +114,8 @@ export default function PipelineBuilder({ availableApplets, onExecute, isConnect
                             onClick={() => onExecute(pipeline.map(p => p.id), totalPrice, inputData)}
                             disabled={pipeline.length === 0 || !isConnected}
                             className={`w-full py-4 font-bold rounded-xl transition-all shadow-lg ${pipeline.length > 0 && isConnected
-                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90 hover:shadow-blue-500/25'
-                                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90 hover:shadow-blue-500/25'
+                                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                 }`}
                         >
                             {!isConnected ? "Connect Wallet to Execute" : "Execute Pipeline"}
