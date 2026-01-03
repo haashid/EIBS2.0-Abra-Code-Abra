@@ -3,9 +3,12 @@
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
+import IntroAnimation from "@/components/IntroAnimation";
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-blue-500/30">
+      <IntroAnimation />
       <Navbar />
 
       <main className="flex flex-col items-center justify-center pt-20 px-6 text-center">
