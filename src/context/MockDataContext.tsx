@@ -55,8 +55,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 
     // Load from LocalStorage on mount
     useEffect(() => {
-        const savedApplets = localStorage.getItem("weilchain_applets");
-        const savedExecutions = localStorage.getItem("weilchain_executions");
+        const savedApplets = localStorage.getItem("weilchain_applets_v2");
+        const savedExecutions = localStorage.getItem("weilchain_executions_v2");
 
         if (savedApplets) setApplets(JSON.parse(savedApplets));
         if (savedExecutions) setExecutions(JSON.parse(savedExecutions));
@@ -66,8 +66,8 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
     // Save to LocalStorage whenever state changes
     useEffect(() => {
         if (!isInitialized) return;
-        localStorage.setItem("weilchain_applets", JSON.stringify(applets));
-        localStorage.setItem("weilchain_executions", JSON.stringify(executions));
+        localStorage.setItem("weilchain_applets_v2", JSON.stringify(applets));
+        localStorage.setItem("weilchain_executions_v2", JSON.stringify(executions));
     }, [applets, executions, isInitialized]);
 
     const registerApplet = (name: string, description: string, price: string, inputSchema: string, outputSchema: string) => {
