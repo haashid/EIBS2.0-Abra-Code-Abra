@@ -84,5 +84,5 @@ WeilChain Nexus solves the **fragmentation problem** in Web3. By standardizing i
 ---
 
 <p align="center">
-  Made with ❤️ by Haashid
+  Made with ❤️ by Abra Code Abra
 </p>
