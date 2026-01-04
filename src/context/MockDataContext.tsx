@@ -27,7 +27,7 @@ export interface ExecutionLog {
 interface MockDataContextType {
     applets: Applet[];
     executions: ExecutionLog[];
-    registerApplet: (name: string, description: string, price: string) => void;
+    registerApplet: (name: string, description: string, price: string, inputSchema: string, outputSchema: string) => void;
     logExecution: (appletIds: number[], totalPrice: string, result: any) => void;
 }
 
@@ -70,14 +70,15 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("weilchain_executions", JSON.stringify(executions));
     }, [applets, executions, isInitialized]);
 
-    const registerApplet = (name: string, description: string, price: string) => {
+    const registerApplet = (name: string, description: string, price: string, inputSchema: string, outputSchema: string) => {
+        const maxId = applets.length > 0 ? Math.max(...applets.map(a => a.id)) : 0;
         const newApplet: Applet = {
-            id: applets.length + 1,
+            id: maxId + 1,
             name,
             description,
             price,
-            inputSchema: "Unknown",
-            outputSchema: "Unknown",
+            inputSchema: inputSchema || "JSON",
+            outputSchema: outputSchema || "JSON",
             owner: "0xUser...", // Mock owner
         };
         setApplets([...applets, newApplet]);

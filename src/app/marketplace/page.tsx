@@ -23,15 +23,19 @@ export default function Marketplace() {
     const [newAppletName, setNewAppletName] = useState("");
     const [newAppletPrice, setNewAppletPrice] = useState("");
     const [newAppletDesc, setNewAppletDesc] = useState("");
+    const [newAppletInputSchema, setNewAppletInputSchema] = useState("Text");
+    const [newAppletOutputSchema, setNewAppletOutputSchema] = useState("JSON");
 
     const handleRegister = (e: React.FormEvent) => {
         e.preventDefault();
         if (!newAppletName || !newAppletPrice) return;
-        registerApplet(newAppletName, newAppletDesc, newAppletPrice);
+        registerApplet(newAppletName, newAppletDesc, newAppletPrice, newAppletInputSchema, newAppletOutputSchema);
         setIsRegisterOpen(false);
         setNewAppletName("");
         setNewAppletPrice("");
         setNewAppletDesc("");
+        setNewAppletInputSchema("Text");
+        setNewAppletOutputSchema("JSON");
     };
 
     // Filter applets based on search query
@@ -123,8 +127,8 @@ export default function Marketplace() {
                             onClick={() => setIsRegisterOpen(!isRegisterOpen)}
                             disabled={!isConnected}
                             className={`whitespace-nowrap px-6 py-3 rounded-lg font-medium transition-all shadow-lg ${isConnected
-                                    ? 'bg-blue-600 hover:bg-blue-500 text-white hover:shadow-blue-500/25'
-                                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                ? 'bg-blue-600 hover:bg-blue-500 text-white hover:shadow-blue-500/25'
+                                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                 }`}
                             title={!isConnected ? "Connect Wallet to Register" : ""}
                         >
@@ -157,6 +161,32 @@ export default function Marketplace() {
                                     className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
                                     placeholder="0.05"
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-400">Input Type</label>
+                                <select
+                                    value={newAppletInputSchema}
+                                    onChange={(e) => setNewAppletInputSchema(e.target.value)}
+                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white"
+                                >
+                                    <option>Text</option>
+                                    <option>Image</option>
+                                    <option>CSV</option>
+                                    <option>JSON</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-400">Output Type</label>
+                                <select
+                                    value={newAppletOutputSchema}
+                                    onChange={(e) => setNewAppletOutputSchema(e.target.value)}
+                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white"
+                                >
+                                    <option>JSON</option>
+                                    <option>Text</option>
+                                    <option>Image</option>
+                                    <option>CSV</option>
+                                </select>
                             </div>
                             <div className="col-span-full space-y-2">
                                 <label className="text-sm font-medium text-gray-400">Description</label>
