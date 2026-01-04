@@ -10,7 +10,12 @@ import { useAccount } from "wagmi";
 
 
 
+import { useSearchParams } from "next/navigation";
+
 export default function PipelinePage() {
+    const searchParams = useSearchParams();
+    const initialAppletId = searchParams.get("appletId") ? Number(searchParams.get("appletId")) : null;
+
     const { isConnected } = useAccount();
     const { applets, logExecution } = useMockData();
     const [executionResult, setExecutionResult] = useState<string | null>(null);
@@ -185,6 +190,7 @@ export default function PipelinePage() {
                     availableApplets={availableApplets}
                     onExecute={handleExecute}
                     isConnected={isConnected}
+                    initialAppletId={initialAppletId}
                 />
             </main>
         </div>

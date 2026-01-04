@@ -10,14 +10,21 @@ import { useMockData } from "@/context/MockDataContext";
 
 
 
+import { useRouter } from "next/navigation";
+
 const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}` || "0x0000000000000000000000000000000000000000";
 
 export default function Marketplace() {
+    const router = useRouter();
     const { isConnected } = useAccount();
     const { applets, registerApplet } = useMockData();
     const [isRegisterOpen, setIsRegisterOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedAppletId, setSelectedAppletId] = useState<number | null>(null);
+
+    const handleUseApplet = (id: number) => {
+        router.push(`/pipeline?appletId=${id}`);
+    };
 
     // Form State
     const [newAppletName, setNewAppletName] = useState("");
@@ -100,7 +107,10 @@ export default function Marketplace() {
                                 <button onClick={() => setSelectedAppletId(null)} className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
                                     Close
                                 </button>
-                                <button className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold">
+                                <button
+                                    onClick={() => handleUseApplet(selectedApplet.id)}
+                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold"
+                                >
                                     Add to Pipeline
                                 </button>
                             </div>
@@ -218,6 +228,7 @@ export default function Marketplace() {
                                 owner={applet.owner}
                                 isActive={applet.isActive}
                                 onViewDetails={(id) => setSelectedAppletId(id)}
+                                onPurchase={(id) => handleUseApplet(id)}
                             />
                         ))
                     ) : (

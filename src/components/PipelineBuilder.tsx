@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatEther } from "viem";
 
 interface Applet {
@@ -15,10 +15,20 @@ interface PipelineBuilderProps {
     availableApplets: Applet[];
     onExecute: (appletIds: number[], totalPrice: bigint, inputData: string) => void;
     isConnected: boolean;
+    initialAppletId?: number | null;
 }
 
-export default function PipelineBuilder({ availableApplets, onExecute, isConnected }: PipelineBuilderProps) {
+export default function PipelineBuilder({ availableApplets, onExecute, isConnected, initialAppletId }: PipelineBuilderProps) {
     const [pipeline, setPipeline] = useState<Applet[]>([]);
+
+    useEffect(() => {
+        if (initialAppletId) {
+            const match = availableApplets.find(a => a.id === initialAppletId);
+            if (match) {
+                setPipeline([match]);
+            }
+        }
+    }, [initialAppletId, availableApplets]);
     const [inputData, setInputData] = useState("");
 
     const addToPipeline = (applet: Applet) => {
