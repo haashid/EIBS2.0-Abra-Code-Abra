@@ -70,26 +70,7 @@ Every pipeline run is recorded on the **WeilChain**. Trust, but verify. We provi
 
 ---
 
-## 🌍 Deploying to WeilChain
 
-Want to run your own instance?
-
-1.  **Configure Environment**
-    Create a `.env` file:
-    ```env
-    PRIVATE_KEY=your_deployer_key
-    SEPOLIA_RPC_URL=https://rpc.sepolia.org
-    ```
-
-2.  **Deploy Contracts**
-    ```bash
-    npx hardhat run scripts/deploy.ts --network sepolia
-    ```
-
-3.  **Update Frontend**
-    Paste your new contract addresses into `src/config/contracts.ts` and restart the app.
-
----
 
 ## 🏆 Innovation & Impact
 
