@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Web3Provider } from "@/context/Web3Provider";
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Decentralized Applet Marketplace",
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -25,6 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+      </head>
       <body className={inter.className}>
         <Web3Provider>
           <MockDataProvider>

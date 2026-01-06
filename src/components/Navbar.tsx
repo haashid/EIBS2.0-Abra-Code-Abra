@@ -23,7 +23,7 @@ export default function Navbar() {
                     WeilChain Nexus
                 </Link>
                 {/* Desktop Menu */}
-                <div className="!hidden lg:!flex gap-6 text-gray-400">
+                <div className="!hidden xl:!flex gap-6 text-gray-400">
                     <Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link>
                     <Link href="/pipeline" className="hover:text-white transition-colors">Pipeline</Link>
                     <Link href="/history" className="hover:text-white transition-colors">History</Link>
@@ -32,8 +32,8 @@ export default function Navbar() {
 
             {/* Mobile Actions */}
             <div className="flex items-center gap-4">
-                {/* Wallet Button (Visible on all screens, simplified on mobile if needed) */}
-                <div className="!hidden lg:!block">
+                {/* Wallet Button */}
+                <div className="!hidden xl:!block">
                     {mounted && isConnected ? (
                         <div className="flex items-center gap-4">
                             <span className="text-sm text-gray-400 font-mono bg-gray-800 px-3 py-1 rounded-full">
@@ -58,7 +58,7 @@ export default function Navbar() {
 
                 {/* Hamburger Button */}
                 <button
-                    className="lg:!hidden p-2 text-gray-400 hover:text-white"
+                    className="xl:!hidden p-2 text-gray-400 hover:text-white"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
-                <div className="absolute top-full left-0 right-0 bg-gray-900 border-b border-gray-800 p-6 flex flex-col gap-4 lg:hidden z-50 shadow-2xl animate-in slide-in-from-top-2">
+                <div className="absolute top-full left-0 right-0 bg-gray-900 border-b border-gray-800 p-6 flex flex-col gap-4 xl:hidden z-50 shadow-2xl animate-in slide-in-from-top-2">
                     <Link href="/marketplace" className="text-lg text-gray-300 hover:text-white py-2 border-b border-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Marketplace</Link>
                     <Link href="/pipeline" className="text-lg text-gray-300 hover:text-white py-2 border-b border-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Pipeline</Link>
                     <Link href="/history" className="text-lg text-gray-300 hover:text-white py-2 border-b border-gray-800" onClick={() => setIsMobileMenuOpen(false)}>History</Link>
