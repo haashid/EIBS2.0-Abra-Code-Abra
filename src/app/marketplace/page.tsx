@@ -66,8 +66,8 @@ export default function Marketplace() {
             {/* Details Modal */}
             {selectedApplet && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
-                        <div className="p-8">
+                    <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl m-4 md:m-0">
+                        <div className="p-6 md:p-8">
                             <div className="flex justify-between items-start mb-6">
                                 <div>
                                     <h2 className="text-3xl font-bold text-white mb-2">{selectedApplet.name}</h2>
@@ -120,23 +120,23 @@ export default function Marketplace() {
             )}
 
             <main className="max-w-7xl mx-auto px-6 py-12">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                <div className="flex flex-col lg:flex-row justify-between items-end mb-12 gap-6">
                     <div>
                         <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Applet Marketplace</h1>
                         <p className="text-gray-400">Discover and integrate decentralized micro-services.</p>
                     </div>
-                    <div className="flex gap-4 w-full md:w-auto">
+                    <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
                         <input
                             type="text"
                             placeholder="Search applets..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 w-full md:w-64"
+                            className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 w-full sm:w-64"
                         />
                         <button
                             onClick={() => setIsRegisterOpen(!isRegisterOpen)}
                             disabled={!isConnected}
-                            className={`whitespace-nowrap px-6 py-3 rounded-lg font-medium transition-all shadow-lg ${isConnected
+                            className={`whitespace-nowrap px-6 py-3 rounded-lg font-medium transition-all shadow-lg text-center ${isConnected
                                 ? 'bg-blue-600 hover:bg-blue-500 text-white hover:shadow-blue-500/25'
                                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                 }`}

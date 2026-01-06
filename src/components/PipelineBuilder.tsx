@@ -41,6 +41,20 @@ export default function PipelineBuilder({ availableApplets, onExecute, isConnect
         setPipeline(newPipeline);
     };
 
+    const moveUp = (index: number) => {
+        if (index === 0) return;
+        const newPipeline = [...pipeline];
+        [newPipeline[index - 1], newPipeline[index]] = [newPipeline[index], newPipeline[index - 1]];
+        setPipeline(newPipeline);
+    };
+
+    const moveDown = (index: number) => {
+        if (index === pipeline.length - 1) return;
+        const newPipeline = [...pipeline];
+        [newPipeline[index + 1], newPipeline[index]] = [newPipeline[index], newPipeline[index + 1]];
+        setPipeline(newPipeline);
+    };
+
     const totalPrice = pipeline.reduce((sum, applet) => sum + applet.price, BigInt(0));
 
     return (
@@ -66,7 +80,7 @@ export default function PipelineBuilder({ availableApplets, onExecute, isConnect
 
             {/* Pipeline Stage */}
             <div className="lg:col-span-2">
-                <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 min-h-[500px] flex flex-col">
+                <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-8 min-h-[500px] flex flex-col">
                     <h3 className="text-xl font-bold text-white mb-6">Pipeline Configuration</h3>
 
                     <div className="mb-6">
@@ -86,31 +100,72 @@ export default function PipelineBuilder({ availableApplets, onExecute, isConnect
                         </div>
                     ) : (
                         <div className="space-y-4 flex-1">
-                            {pipeline.map((applet, idx) => (
-                                <div key={idx} className="relative flex items-center">
-                                    <div className="w-8 flex flex-col items-center mr-4">
-                                        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-                                            {idx + 1}
-                                        </div>
-                                        {idx < pipeline.length - 1 && <div className="w-0.5 h-12 bg-gray-800 mt-2" />}
-                                    </div>
+                            {pipeline.map((applet, idx) => {
+                                // Validation Logic
+                                let showError = false;
+                                let errorMsg = "";
+                                if (idx > 0) {
+                                    const prevApplet = pipeline[idx - 1];
+                                    const prevOutput = prevApplet.outputSchema || "JSON";
+                                    const currentInput = applet.inputSchema || "JSON";
+                                    if (prevOutput !== currentInput && prevOutput !== "JSON" && currentInput !== "JSON") {
+                                        showError = true;
+                                        errorMsg = `Type Mismatch: ${prevApplet.name} outputs ${prevOutput}, but ${applet.name} expects ${currentInput}`;
+                                    }
+                                }
 
-                                    <div className="flex-1 p-4 bg-gray-800 rounded-lg border border-gray-700 flex justify-between items-center">
-                                        <div>
-                                            <h4 className="font-bold text-white">{applet.name}</h4>
-                                            <span className="text-xs text-green-400 font-mono">
-                                                Input: {applet.inputSchema || "JSON"} → Output: {applet.outputSchema || "JSON"}
-                                            </span>
+                                return (
+                                    <div key={idx} className="relative">
+                                        {showError && (
+                                            <div className="mb-2 p-2 bg-red-900/20 border border-red-500/50 rounded text-red-400 text-xs flex items-center gap-2">
+                                                <span>⚠️</span> {errorMsg}
+                                            </div>
+                                        )}
+                                        <div className="flex items-center">
+                                            <div className="w-8 flex flex-col items-center mr-4">
+                                                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                                                    {idx + 1}
+                                                </div>
+                                                {idx < pipeline.length - 1 && <div className="w-0.5 h-12 bg-gray-800 mt-2" />}
+                                            </div>
+
+                                            <div className="flex-1 p-4 bg-gray-800 rounded-lg border border-gray-700 flex justify-between items-center">
+                                                <div>
+                                                    <h4 className="font-bold text-white">{applet.name}</h4>
+                                                    <span className="text-xs text-green-400 font-mono">
+                                                        Input: {applet.inputSchema || "JSON"} → Output: {applet.outputSchema || "JSON"}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex flex-col gap-1 mr-2">
+                                                        <button
+                                                            onClick={() => moveUp(idx)}
+                                                            disabled={idx === 0}
+                                                            className="text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                                                        >
+                                                            ▲
+                                                        </button>
+                                                        <button
+                                                            onClick={() => moveDown(idx)}
+                                                            disabled={idx === pipeline.length - 1}
+                                                            className="text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                                                        >
+                                                            ▼
+                                                        </button>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => removeFromPipeline(idx)}
+                                                        className="text-gray-500 hover:text-red-400 p-2 border-l border-gray-700 pl-4"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <button
-                                            onClick={() => removeFromPipeline(idx)}
-                                            className="text-gray-500 hover:text-red-400 p-2"
-                                        >
-                                            ✕
-                                        </button>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
 

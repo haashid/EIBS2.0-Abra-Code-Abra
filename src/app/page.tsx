@@ -7,28 +7,28 @@ import IntroAnimation from "@/components/IntroAnimation";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-blue-500/30 overflow-x-hidden w-full">
       <IntroAnimation />
       <Navbar />
 
-      <main className="flex flex-col items-center justify-center pt-20 px-6 text-center">
-        <div className="relative mb-8">
+      <main className="flex flex-col items-center justify-center pt-20 px-4 text-center">
+        <div className="relative mb-8 max-w-full">
           <div className="absolute inset-0 bg-blue-500 blur-[100px] opacity-20 rounded-full animate-pulse" />
-          <h1 className="relative text-6xl md:text-8xl font-bold tracking-tighter bg-gradient-to-br from-white via-gray-200 to-gray-500 bg-clip-text text-transparent mb-6">
+          <h1 className="relative text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter bg-gradient-to-br from-white via-gray-200 to-gray-500 bg-clip-text text-transparent mb-6">
             WeilChain Nexus
           </h1>
         </div>
 
-        <p className="max-w-2xl text-xl text-gray-400 mb-12 leading-relaxed">
+        <p className="max-w-2xl text-base sm:text-xl text-gray-400 mb-12 leading-relaxed">
           The decentralized marketplace for AI applets. Discover, compose, and execute powerful modular workflows on the blockchain.
         </p>
 
-        <div className="flex flex-wrap justify-center gap-6 mb-24">
-          <Link href="/marketplace" className="group relative px-8 py-4 bg-white text-black rounded-lg font-bold text-lg hover:bg-gray-200 transition-colors overflow-hidden">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mb-24 w-full sm:w-auto">
+          <Link href="/marketplace" className="group relative px-8 py-4 bg-white text-black rounded-lg font-bold text-lg hover:bg-gray-200 transition-colors overflow-hidden w-full sm:w-auto">
             <span className="relative z-10">Explore Marketplace</span>
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity" />
           </Link>
-          <Link href="/pipeline" className="px-8 py-4 bg-gray-900 border border-gray-800 text-white rounded-lg font-bold text-lg hover:bg-gray-800 transition-colors">
+          <Link href="/pipeline" className="px-8 py-4 bg-gray-900 border border-gray-800 text-white rounded-lg font-bold text-lg hover:bg-gray-800 transition-colors w-full sm:w-auto">
             Build Pipeline
           </Link>
         </div>

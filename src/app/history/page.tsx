@@ -35,8 +35,8 @@ export default function HistoryPage() {
             <main className="max-w-6xl mx-auto px-6 py-12">
                 <h1 className="text-4xl font-bold text-white mb-12 tracking-tight">Execution History</h1>
 
-                <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
-                    <table className="w-full text-left border-collapse">
+                <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
                             <tr className="bg-gray-900 text-gray-400 text-sm font-medium uppercase tracking-wider">
                                 <th className="p-6 border-b border-gray-800">Execution ID</th>
