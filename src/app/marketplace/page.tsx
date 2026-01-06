@@ -1,18 +1,12 @@
 "use client";
 
-import { useReadContract, useWriteContract, useAccount } from "wagmi";
+import { useAccount } from "wagmi";
 import Navbar from "@/components/Navbar";
 import AppletCard from "@/components/AppletCard";
-import AppletRegistryABI from "@/abis/AppletRegistry.json";
-import { formatEther, parseEther } from "viem";
+import { parseEther } from "viem";
 import React, { useState } from "react";
 import { useMockData } from "@/context/MockDataContext";
-
-
-
 import { useRouter } from "next/navigation";
-
-const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}` || "0x0000000000000000000000000000000000000000";
 
 export default function Marketplace() {
     const router = useRouter();
@@ -54,62 +48,62 @@ export default function Marketplace() {
     const displayApplets = filteredApplets.map(a => ({
         ...a,
         price: parseEther(a.price),
-        isActive: true // Mock active status
+        isActive: true
     }));
 
     const selectedApplet = applets.find(a => a.id === selectedAppletId);
 
     return (
-        <div className="min-h-screen bg-black text-gray-200 font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-black text-gray-200 font-sans selection:bg-blue-500/30 overflow-x-hidden">
             <Navbar />
 
             {/* Details Modal */}
             {selectedApplet && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl m-4 md:m-0">
-                        <div className="p-6 md:p-8">
-                            <div className="flex justify-between items-start mb-6">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-gray-900 border border-gray-700 rounded-xl sm:rounded-2xl w-full max-w-lg sm:max-w-2xl overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="p-4 sm:p-6 md:p-8">
+                            <div className="flex justify-between items-start mb-4 sm:mb-6">
                                 <div>
-                                    <h2 className="text-3xl font-bold text-white mb-2">{selectedApplet.name}</h2>
-                                    <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-xs font-mono border border-blue-500/30">
+                                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">{selectedApplet.name}</h2>
+                                    <span className="bg-blue-900/30 text-blue-400 px-2 sm:px-3 py-1 rounded-full text-xs font-mono border border-blue-500/30">
                                         ID: {selectedApplet.id}
                                     </span>
                                 </div>
-                                <button onClick={() => setSelectedAppletId(null)} className="text-gray-400 hover:text-white transition-colors text-2xl">
+                                <button onClick={() => setSelectedAppletId(null)} className="text-gray-400 hover:text-white transition-colors text-2xl p-2">
                                     &times;
                                 </button>
                             </div>
 
-                            <p className="text-gray-300 leading-relaxed mb-8 text-lg">
+                            <p className="text-gray-300 leading-relaxed mb-6 sm:mb-8 text-sm sm:text-base md:text-lg">
                                 {selectedApplet.description}
                             </p>
 
-                            <div className="grid grid-cols-2 gap-6 mb-8">
-                                <div className="bg-gray-950 p-4 rounded-xl border border-gray-800">
-                                    <span className="text-gray-500 text-sm block mb-1">Input Schema</span>
-                                    <span className="text-green-400 font-mono">{selectedApplet.inputSchema || "JSON"}</span>
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
+                                <div className="bg-gray-950 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-800">
+                                    <span className="text-gray-500 text-xs sm:text-sm block mb-1">Input Schema</span>
+                                    <span className="text-green-400 font-mono text-sm sm:text-base">{selectedApplet.inputSchema || "JSON"}</span>
                                 </div>
-                                <div className="bg-gray-950 p-4 rounded-xl border border-gray-800">
-                                    <span className="text-gray-500 text-sm block mb-1">Output Schema</span>
-                                    <span className="text-green-400 font-mono">{selectedApplet.outputSchema || "JSON"}</span>
+                                <div className="bg-gray-950 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-800">
+                                    <span className="text-gray-500 text-xs sm:text-sm block mb-1">Output Schema</span>
+                                    <span className="text-green-400 font-mono text-sm sm:text-base">{selectedApplet.outputSchema || "JSON"}</span>
                                 </div>
-                                <div className="bg-gray-950 p-4 rounded-xl border border-gray-800">
-                                    <span className="text-gray-500 text-sm block mb-1">Price per call</span>
-                                    <span className="text-white font-mono text-lg">{selectedApplet.price} ETH</span>
+                                <div className="bg-gray-950 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-800">
+                                    <span className="text-gray-500 text-xs sm:text-sm block mb-1">Price per call</span>
+                                    <span className="text-white font-mono text-sm sm:text-lg">{selectedApplet.price} ETH</span>
                                 </div>
-                                <div className="bg-gray-950 p-4 rounded-xl border border-gray-800">
-                                    <span className="text-gray-500 text-sm block mb-1">Owner</span>
-                                    <span className="text-gray-400 font-mono text-xs truncate" title={selectedApplet.owner}>{selectedApplet.owner}</span>
+                                <div className="bg-gray-950 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-800">
+                                    <span className="text-gray-500 text-xs sm:text-sm block mb-1">Owner</span>
+                                    <span className="text-gray-400 font-mono text-xs truncate block" title={selectedApplet.owner}>{selectedApplet.owner}</span>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-3">
-                                <button onClick={() => setSelectedAppletId(null)} className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
+                            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+                                <button onClick={() => setSelectedAppletId(null)} className="px-4 sm:px-6 py-2 text-gray-400 hover:text-white transition-colors order-2 sm:order-1">
                                     Close
                                 </button>
                                 <button
                                     onClick={() => handleUseApplet(selectedApplet.id)}
-                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold"
+                                    className="px-4 sm:px-6 py-2 sm:py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-sm sm:text-base order-1 sm:order-2"
                                 >
                                     Add to Pipeline
                                 </button>
@@ -119,65 +113,69 @@ export default function Marketplace() {
                 </div>
             )}
 
-            <main className="max-w-7xl mx-auto px-6 py-12">
-                <div className="flex flex-col lg:flex-row justify-between items-end mb-12 gap-6">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+                {/* Header */}
+                <div className="flex flex-col gap-4 sm:gap-6 mb-8 sm:mb-12">
                     <div>
-                        <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Applet Marketplace</h1>
-                        <p className="text-gray-400">Discover and integrate decentralized micro-services.</p>
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">Applet Marketplace</h1>
+                        <p className="text-gray-400 text-sm sm:text-base">Discover and integrate decentralized micro-services.</p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+
+                    {/* Search and Register */}
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         <input
                             type="text"
                             placeholder="Search applets..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 w-full sm:w-64"
+                            className="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-4 py-2.5 sm:py-3 text-white focus:outline-none focus:border-blue-500 text-sm sm:text-base"
                         />
                         <button
                             onClick={() => setIsRegisterOpen(!isRegisterOpen)}
                             disabled={!isConnected}
-                            className={`whitespace-nowrap px-6 py-3 rounded-lg font-medium transition-all shadow-lg text-center ${isConnected
-                                ? 'bg-blue-600 hover:bg-blue-500 text-white hover:shadow-blue-500/25'
+                            className={`whitespace-nowrap px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${isConnected
+                                ? 'bg-blue-600 hover:bg-blue-500 text-white'
                                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                 }`}
                             title={!isConnected ? "Connect Wallet to Register" : ""}
                         >
-                            {isRegisterOpen ? 'Close Form' : isConnected ? 'Register Applet' : 'Connect Wallet to Register'}
+                            {isRegisterOpen ? 'Close' : isConnected ? 'Register Applet' : 'Connect to Register'}
                         </button>
                     </div>
                 </div>
 
+                {/* Registration Form */}
                 {isRegisterOpen && (
-                    <div className="mb-12 p-8 bg-gray-900/50 border border-gray-800 rounded-2xl animate-in fade-in slide-in-from-top-4">
-                        <h2 className="text-xl font-bold text-white mb-6">Register New Applet</h2>
-                        <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleRegister}>
+                    <div className="mb-8 sm:mb-12 p-4 sm:p-6 md:p-8 bg-gray-900/50 border border-gray-800 rounded-xl sm:rounded-2xl">
+                        <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Register New Applet</h2>
+                        <form className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6" onSubmit={handleRegister}>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-400">Applet Name</label>
+                                <label className="text-xs sm:text-sm font-medium text-gray-400">Applet Name</label>
                                 <input
                                     type="text"
                                     value={newAppletName}
                                     onChange={(e) => setNewAppletName(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base"
                                     placeholder="e.g. Text Summarizer"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-400">Price (ETH)</label>
+                                <label className="text-xs sm:text-sm font-medium text-gray-400">Price (ETH)</label>
                                 <input
                                     type="number"
                                     step="0.001"
                                     value={newAppletPrice}
                                     onChange={(e) => setNewAppletPrice(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base"
                                     placeholder="0.05"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-400">Input Type</label>
+                                <label className="text-xs sm:text-sm font-medium text-gray-400">Input Type</label>
                                 <select
                                     value={newAppletInputSchema}
                                     onChange={(e) => setNewAppletInputSchema(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white"
+                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors text-white text-sm sm:text-base"
                                 >
                                     <option>Text</option>
                                     <option>Image</option>
@@ -186,11 +184,11 @@ export default function Marketplace() {
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-400">Output Type</label>
+                                <label className="text-xs sm:text-sm font-medium text-gray-400">Output Type</label>
                                 <select
                                     value={newAppletOutputSchema}
                                     onChange={(e) => setNewAppletOutputSchema(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white"
+                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors text-white text-sm sm:text-base"
                                 >
                                     <option>JSON</option>
                                     <option>Text</option>
@@ -198,17 +196,17 @@ export default function Marketplace() {
                                     <option>CSV</option>
                                 </select>
                             </div>
-                            <div className="col-span-full space-y-2">
-                                <label className="text-sm font-medium text-gray-400">Description</label>
+                            <div className="sm:col-span-2 space-y-2">
+                                <label className="text-xs sm:text-sm font-medium text-gray-400">Description</label>
                                 <textarea
                                     value={newAppletDesc}
                                     onChange={(e) => setNewAppletDesc(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors h-32"
+                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors h-24 sm:h-32 text-sm sm:text-base"
                                     placeholder="Describe functionality..."
                                 />
                             </div>
-                            <div className="col-span-full">
-                                <button className="w-full py-3 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg border border-gray-700 transition-colors">
+                            <div className="sm:col-span-2">
+                                <button className="w-full py-2.5 sm:py-3 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg border border-gray-700 transition-colors text-sm sm:text-base">
                                     Submit Registration (Mock)
                                 </button>
                             </div>
@@ -216,7 +214,8 @@ export default function Marketplace() {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {/* Applet Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {displayApplets.length > 0 ? (
                         displayApplets.map((applet: any, idx: number) => (
                             <AppletCard
@@ -232,7 +231,7 @@ export default function Marketplace() {
                             />
                         ))
                     ) : (
-                        <div className="col-span-full text-center py-20 text-gray-500">
+                        <div className="col-span-full text-center py-12 sm:py-20 text-gray-500">
                             No applets found matching "{searchQuery}"
                         </div>
                     )}

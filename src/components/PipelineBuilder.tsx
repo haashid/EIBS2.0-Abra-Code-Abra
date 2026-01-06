@@ -58,10 +58,10 @@ export default function PipelineBuilder({ availableApplets, onExecute, isConnect
     const totalPrice = pipeline.reduce((sum, applet) => sum + applet.price, BigInt(0));
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Available Applets */}
-            <div className="lg:col-span-1 bg-gray-900/50 border border-gray-800 rounded-xl p-6 h-fit">
-                <h3 className="text-xl font-bold text-white mb-4">Available Applets</h3>
+            <div className="lg:col-span-1 bg-gray-900/50 border border-gray-800 rounded-xl p-4 sm:p-6 h-fit order-2 lg:order-1">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Available Applets</h3>
                 <div className="space-y-3">
                     {availableApplets.map((applet) => (
                         <button
@@ -79,12 +79,12 @@ export default function PipelineBuilder({ availableApplets, onExecute, isConnect
             </div>
 
             {/* Pipeline Stage */}
-            <div className="lg:col-span-2">
-                <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-8 min-h-[500px] flex flex-col">
-                    <h3 className="text-xl font-bold text-white mb-6">Pipeline Configuration</h3>
+            <div className="lg:col-span-2 order-1 lg:order-2">
+                <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-6 lg:p-8 min-h-[400px] sm:min-h-[500px] flex flex-col">
+                    <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Pipeline Configuration</h3>
 
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-400 mb-2">Input Data (Text)</label>
+                    <div className="mb-4 sm:mb-6">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-2">Input Data (Text)</label>
                         <textarea
                             value={inputData}
                             onChange={(e) => setInputData(e.target.value)}

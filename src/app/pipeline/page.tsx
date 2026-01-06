@@ -3,16 +3,13 @@
 import Navbar from "@/components/Navbar";
 import PipelineBuilder from "@/components/PipelineBuilder";
 import { parseEther, formatEther } from "viem";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Sentiment from "sentiment";
 import { useMockData } from "@/context/MockDataContext";
 import { useAccount } from "wagmi";
-
-
-
 import { useSearchParams } from "next/navigation";
 
-export default function PipelinePage() {
+function PipelineContent() {
     const searchParams = useSearchParams();
     const initialAppletId = searchParams.get("appletId") ? Number(searchParams.get("appletId")) : null;
 
@@ -48,8 +45,6 @@ export default function PipelinePage() {
         // Logic for Applet ID 5: AI Summarizer (Hugging Face API + Fallback)
         if (appletIds.includes(5)) {
             try {
-                // Attempt to call Hugging Face Inference API
-                // Note: In a real deploy, use an env var: process.env.NEXT_PUBLIC_HF_TOKEN
                 const API_TOKEN = process.env.NEXT_PUBLIC_HF_TOKEN;
 
                 if (API_TOKEN) {
@@ -68,11 +63,9 @@ export default function PipelinePage() {
                         throw new Error("Invalid API response");
                     }
                 } else {
-                    // No Key? Throw to trigger fallback without error logging
                     throw new Error("No API Key provided, using local fallback");
                 }
             } catch (err) {
-                // FALLBACK: Simple heuristic directly in client
                 console.warn("Using local summarizer fallback:", err);
                 const sentences = inputData.match(/[^.!?]+[.!?]+/g) || [inputData];
                 const summary = sentences.slice(0, 2).join(" ");
@@ -84,7 +77,6 @@ export default function PipelinePage() {
         let paramCryptoPrice = null;
         if (appletIds.includes(6)) {
             try {
-                // Default to 'ethereum' if input is empty, or sanitize input
                 const coinId = inputData.trim().toLowerCase() || "ethereum";
                 const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
                 const data = await response.json();
@@ -112,73 +104,71 @@ export default function PipelinePage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-gray-200 font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-black text-gray-200 font-sans selection:bg-blue-500/30 overflow-x-hidden">
             <Navbar />
 
-            <main className="max-w-7xl mx-auto px-6 py-12">
-                <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Pipeline Builder</h1>
-                <p className="text-gray-400 mb-12">Combine multiple applets into a powerful automated workflow.</p>
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">Pipeline Builder</h1>
+                <p className="text-gray-400 mb-8 sm:mb-12 text-sm sm:text-base">Combine multiple applets into a powerful automated workflow.</p>
 
+                {/* Processing Overlay */}
                 {executionResult === "processing" && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <h2 className="text-xl font-bold text-white">Executing Pipeline...</h2>
-                        <p className="text-gray-400">Verifying on-chain & processing data</p>
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-4">
+                        <div className="w-12 sm:w-16 h-12 sm:h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <h2 className="text-lg sm:text-xl font-bold text-white text-center">Executing Pipeline...</h2>
+                        <p className="text-gray-400 text-sm sm:text-base text-center">Verifying on-chain & processing data</p>
                     </div>
                 )}
 
+                {/* Success Overlay */}
                 {executionResult === "success" && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
-                        <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-4xl mb-6 shadow-[0_0_50px_rgba(34,197,94,0.5)]">
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-4 overflow-y-auto">
+                        <div className="w-16 sm:w-20 h-16 sm:h-20 bg-green-500 rounded-full flex items-center justify-center text-3xl sm:text-4xl mb-4 sm:mb-6 shadow-[0_0_50px_rgba(34,197,94,0.5)]">
                             ✓
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">Execution Complete</h2>
-                        <p className="text-gray-400 mb-6">Results have been logged to the blockchain.</p>
+                        <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 text-center">Execution Complete</h2>
+                        <p className="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base text-center">Results have been logged to the blockchain.</p>
 
-                        {executionResult === "success" && (
-                            <div className="mt-8 bg-green-900/20 border border-green-800 rounded-xl p-6 animate-fade-in">
-                                <h4 className="text-xl font-bold text-green-400 mb-4">Pipeline Execution Successful</h4>
-                                <div className="space-y-2 text-gray-300 font-mono text-sm">
-                                    <p>Status: <span className="text-white">Completed</span></p>
-                                    <p>Transaction Hash: <span className="text-blue-400 break-all">0x{Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}</span></p>
+                        <div className="w-full max-w-lg bg-green-900/20 border border-green-800 rounded-xl p-4 sm:p-6 mb-6">
+                            <h4 className="text-lg sm:text-xl font-bold text-green-400 mb-4">Pipeline Execution Successful</h4>
+                            <div className="space-y-2 text-gray-300 font-mono text-xs sm:text-sm">
+                                <p>Status: <span className="text-white">Completed</span></p>
+                                <p className="break-all">Transaction Hash: <span className="text-blue-400">0x{Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}</span></p>
 
-                                    {sentimentResult && (
-                                        <div className="mt-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
-                                            <p className="font-bold text-gray-400 mb-2">Sentiment Analysis Result:</p>
-                                            <p>Score: {sentimentResult.score}</p>
-                                            <p>Comparative: {sentimentResult.comparative.toFixed(2)}</p>
-                                        </div>
-                                    )}
+                                {sentimentResult && (
+                                    <div className="mt-4 p-3 sm:p-4 bg-gray-900 rounded-lg border border-gray-700">
+                                        <p className="font-bold text-gray-400 mb-2">Sentiment Analysis Result:</p>
+                                        <p>Score: {sentimentResult.score}</p>
+                                        <p>Comparative: {sentimentResult.comparative.toFixed(2)}</p>
+                                    </div>
+                                )}
 
-                                    {summaryResult && (
-                                        <div className="mt-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
-                                            <p className="font-bold text-gray-400 mb-2">AI Summary Result:</p>
-                                            <p>{summaryResult}</p>
-                                        </div>
-                                    )}
+                                {summaryResult && (
+                                    <div className="mt-4 p-3 sm:p-4 bg-gray-900 rounded-lg border border-gray-700">
+                                        <p className="font-bold text-gray-400 mb-2">AI Summary Result:</p>
+                                        <p className="break-words">{summaryResult}</p>
+                                    </div>
+                                )}
 
-                                    {/* Added for Crypto Price Display */}
-                                    {/* Added for Crypto Price Display */}
-                                    {cryptoPriceResult && (
-                                        <div className="mt-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
-                                            <p className="font-bold text-yellow-400 mb-2">🔮 Crypto Oracle Result:</p>
-                                            <p className="text-2xl text-white">{cryptoPriceResult}</p>
-                                        </div>
-                                    )}
-                                </div>
+                                {cryptoPriceResult && (
+                                    <div className="mt-4 p-3 sm:p-4 bg-gray-900 rounded-lg border border-gray-700">
+                                        <p className="font-bold text-yellow-400 mb-2">🔮 Crypto Oracle Result:</p>
+                                        <p className="text-xl sm:text-2xl text-white">{cryptoPriceResult}</p>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
 
-                        <div className="flex gap-4">
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-sm">
                             <button
                                 onClick={() => setExecutionResult(null)}
-                                className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                                className="flex-1 px-4 sm:px-6 py-2.5 sm:py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-sm sm:text-base"
                             >
                                 Build Another
                             </button>
                             <a
                                 href="/history"
-                                className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                                className="flex-1 px-4 sm:px-6 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-center text-sm sm:text-base"
                             >
                                 View History
                             </a>
@@ -194,5 +184,13 @@ export default function PipelinePage() {
                 />
             </main>
         </div>
+    );
+}
+
+export default function PipelinePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
+            <PipelineContent />
+        </Suspense>
     );
 }
