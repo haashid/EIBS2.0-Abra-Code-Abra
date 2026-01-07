@@ -1,0 +1,75 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\haash\\.gemini\\antigravity\\scratch\\weilchain-nexus\\contracts\\AppletRegistry.sol": {
+      "lastModificationDate": 1766851567206,
+      "contentHash": "bda1b897b980a021267a4c540f6174b0",
+      "sourceName": "contracts/AppletRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "AppletRegistry"
+      ]
+    },
+    "C:\\Users\\haash\\.gemini\\antigravity\\scratch\\weilchain-nexus\\contracts\\ExecutionLogger.sol": {
+      "lastModificationDate": 1766851571442,
+      "contentHash": "f82671c013aa653537c01fcae8cf6520",
+      "sourceName": "contracts/ExecutionLogger.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "ExecutionLogger"
+      ]
+    }
+  }
+}
