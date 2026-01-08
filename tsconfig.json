@@ -40,6 +40,8 @@
     "node_modules",
     "scripts",
     "contracts",
-    "test"
+    "test",
+    "wadk-0.1.0",
+    "applets"
   ]
 }

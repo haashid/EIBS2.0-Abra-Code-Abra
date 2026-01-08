@@ -1,0 +1,17 @@
+interface AppletRegistry {
+    query func get_applets() -> Vec<Applet>;
+    query func get_applet_by_id(id: uint) -> Applet;
+    mutate func register_applet(name: string, description: string, price: uint, input_schema: string, output_schema: string) -> uint;
+    mutate func toggle_applet_status(id: uint)
+}
+
+struct Applet {
+    id: uint,
+    name: string,
+    description: string,
+    price: uint,
+    owner: string,
+    input_schema: string,
+    output_schema: string,
+    is_active: bool
+}
