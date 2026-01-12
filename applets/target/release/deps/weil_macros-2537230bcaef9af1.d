@@ -1,0 +1,8 @@
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\applets\target\release\deps\weil_macros-2537230bcaef9af1.d: C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\lib.rs C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\contract.rs C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\event.rs C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\weil_type.rs
+
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\applets\target\release\deps\weil_macros-2537230bcaef9af1.dll: C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\lib.rs C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\contract.rs C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\event.rs C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\weil_type.rs
+
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\lib.rs:
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\contract.rs:
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\event.rs:
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\wadk-0.1.0\wadk-0.1.0\adk\rust\weil_rs\weil_macros\src\weil_type.rs:

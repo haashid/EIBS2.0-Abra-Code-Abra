@@ -1,0 +1,16 @@
+@mcp
+interface TextSummarizer {
+    // Summarizes text into a concise version
+    // text: The input text to summarize
+    query func summarize(text: string) -> result<string, string>;
+    
+    // Execute function for marketplace integration
+    // input: JSON string containing the text to summarize
+    query func execute(input: string) -> result<string, string>;
+    
+    // MCP tool definitions
+    query func tools() -> string;
+    
+    // MCP prompts
+    query func prompts() -> string;
+}

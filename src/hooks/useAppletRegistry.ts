@@ -1,33 +1,69 @@
 "use client";
 
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseEther, keccak256, toBytes } from "viem";
-import AppletRegistryABI from "@/abis/AppletRegistry.json";
+import { useWeil } from "@/context/WeilProvider";
+import { useState, useCallback, useEffect } from "react";
 
-const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_REGISTRY_ADDRESS as `0x${string}` || "0x0000000000000000000000000000000000000000";
+const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_WEIL_REGISTRY_ADDRESS || "";
+const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_WEIL_MARKETPLACE_ADDRESS || "";
+const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_WEIL_TOKEN_ADDRESS || "";
 
-// Type for Applet from contract
+// Type for Applet from our new AppletRegistry contract
 export interface ContractApplet {
-    id: bigint;
+    token_id: string;
     name: string;
     description: string;
-    price: bigint;
+    applet_address: string;
+    price: number;
+    input_schema: string;
+    output_schema: string;
     owner: string;
-    inputSchemaHash: string;
-    outputSchemaHash: string;
-    isActive: boolean;
 }
 
 // Hook to read all applets from the contract
 export function useApplets() {
-    const { data, isLoading, error, refetch } = useReadContract({
-        address: REGISTRY_ADDRESS,
-        abi: AppletRegistryABI,
-        functionName: "getApplets",
-    });
+    const { queryContract, isConnected, wallet } = useWeil();
+    const [applets, setApplets] = useState<ContractApplet[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const refetch = useCallback(async () => {
+        // Only fetch if connected with a wallet and have registry address
+        if (!isConnected || !wallet || !REGISTRY_ADDRESS) {
+            // Return silently - wallet not connected yet
+            return;
+        }
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            // Query Marketplace for all listed applets
+            const contractToQuery = MARKETPLACE_ADDRESS || REGISTRY_ADDRESS;
+            const methodName = MARKETPLACE_ADDRESS ? "get_all_listed_applets" : "get_all_applets";
+
+            const result = await queryContract(
+                contractToQuery,
+                methodName,
+                {}
+            );
+            setApplets(result || []);
+        } catch (err: any) {
+            setError(err.message);
+            console.error("Failed to fetch applets:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [queryContract, isConnected, wallet]);
+
+    // Auto-fetch when wallet connects
+    useEffect(() => {
+        if (isConnected && wallet) {
+            refetch();
+        }
+    }, [isConnected, wallet, refetch]);
 
     return {
-        applets: (data as ContractApplet[] | undefined) || [],
+        applets,
         isLoading,
         error,
         refetch,
@@ -36,34 +72,72 @@ export function useApplets() {
 
 // Hook to register a new applet
 export function useRegisterApplet() {
-    const { writeContract, data: hash, isPending, error } = useWriteContract();
+    const { isConnected, wallet } = useWeil();
+    const [isPending, setIsPending] = useState(false);
+    const [isConfirming, setIsConfirming] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [txHash, setTxHash] = useState<string | null>(null);
 
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-        hash,
-    });
-
-    const registerApplet = async (
+    const registerApplet = useCallback(async (
         name: string,
         description: string,
         priceInEther: string,
         inputSchema: string,
         outputSchema: string
     ) => {
-        const priceWei = parseEther(priceInEther);
-        const inputHash = keccak256(toBytes(inputSchema));
-        const outputHash = keccak256(toBytes(outputSchema));
+        if (!isConnected || !wallet || !REGISTRY_ADDRESS) {
+            throw new Error("Wallet not connected or registry address not set");
+        }
 
-        writeContract({
-            address: REGISTRY_ADDRESS,
-            abi: AppletRegistryABI,
-            functionName: "registerApplet",
-            args: [name, description, priceWei, inputHash, outputHash],
-        });
-    };
+        setIsPending(true);
+        setIsConfirming(false);
+        setIsSuccess(false);
+        setError(null);
+        setTxHash(null);
+
+        try {
+            // Convert price to uint (in smallest unit)
+            const priceUint = Math.floor(parseFloat(priceInEther) * 1e18);
+
+            console.log("Registering applet on chain:", {
+                name, description, price: priceUint, inputSchema, outputSchema
+            });
+
+            const result = await wallet.contracts.execute(
+                REGISTRY_ADDRESS,
+                "register_applet",
+                {
+                    name,
+                    description,
+                    price: priceUint,
+                    input_schema: inputSchema,
+                    output_schema: outputSchema
+                }
+            );
+
+            console.log("Registration result:", result);
+
+            // Extract transaction hash if available
+            if (result && result.transaction_id) {
+                setTxHash(result.transaction_id);
+            }
+
+            setIsConfirming(true);
+            setIsSuccess(true);
+        } catch (err: any) {
+            const msg = err.message || JSON.stringify(err);
+            setError(msg);
+            console.error("Failed to register applet:", err);
+        } finally {
+            setIsPending(false);
+            setIsConfirming(false);
+        }
+    }, [isConnected, wallet]);
 
     return {
         registerApplet,
-        hash,
+        hash: null,
         isPending,
         isConfirming,
         isSuccess,

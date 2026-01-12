@@ -1,44 +1,50 @@
 # 🌐 WeilChain Nexus
-> **The Future of Composable Decentralized Intelligence**
+> **The Decentralized AI Applet Marketplace on WeilChain**
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Status: Production](https://img.shields.io/badge/Status-Production-green)
-![Network: Sepolia](https://img.shields.io/badge/Network-Sepolia-purple)
-![Tech: Next.js](https://img.shields.io/badge/Tech-Next.js-black)
+![Status: Development](https://img.shields.io/badge/Status-Development-orange)
+![Network: Weilliptic Testnet](https://img.shields.io/badge/Network-Weilliptic_Testnet-cyan)
+![Tech: Next.js](https://img.shields.io/badge/Tech-Next.js_16-black)
 
 ## 🚀 The Vision
-**WeilChain Nexus** is not just a marketplace; it's an **execution layer for the decentralized web**. By bridging on-chain logic with off-chain computation, we enable users to build complex, verifiable workflows—**Pipelines**—that combine AI, data processing, and financial transactions into a single, seamless experience.
 
-Traditional DApps are siloed. Nexus is **composable**. 
-Imagine taking a *Sentiment Analysis Applet*, piping its output into an *Automated Trading Bot*, and logging the result forever on the blockchain. **That is Nexus.**
+**WeilChain Nexus** is a decentralized marketplace for AI applets built on **WeilChain** - the first blockchain with native support for:
+
+- 🧠 **On-Chain AI (MCP)** - Run AI models directly on the blockchain
+- 🌐 **HTTP Outcalls** - Make external API calls from smart contracts
+- 🎨 **On-Chain Frontend Hosting** - Deploy your entire DApp on-chain
+- 🔗 **Cross-Contract Composition** - Chain applets into powerful pipelines
 
 ---
 
 ## ✨ Key Features
 
 ### 🧩 **Applet Marketplace**
-Discover a growing ecosystem of micro-services. From **AI Summarizers** to **Data Sanitizers**, finding the right tool is just a search away. Developers can monetize their code by registering applets directly on-chain.
+Discover and deploy AI-powered micro-services. From **Text Summarizers** to **Sentiment Analyzers**, monetize your code by registering applets as NFTs.
 
 ### 🔗 **Visual Pipeline Builder**
 No coding required. Drag, drop, and connect applets to build powerful workflows.
-*   **Input**: Text, Images, CSVs.
-*   **Process**: Chain multiple applets logic together.
-*   **Output**: Actionable insights logged immutably.
+- **Input**: Text, Images, CSV data
+- **Process**: Chain multiple applets together
+- **Output**: Results stored on-chain
 
-### 🤖 **AI-Powered Integrations**
-Nexus ships with built-in AI capabilities. Run **Sentiment Analysis** and **Text Summarization** locally in the browser, verifiable by the community.
+### 🪙 **Yutaka Token (YTK) Economy**
+Pay for applet executions using fungible tokens. Applet owners earn fees automatically.
 
 ### 📜 **Immutable Execution Logs**
-Every pipeline run is recorded on the blockchain. Trust, but verify. We provide a transparent audit trail of every computation, ensuring accountability in a decentralized world.
+Every pipeline run is recorded on-chain. Full transparency and audit trails.
 
 ---
 
 ## 🛠️ Technology Stack
 
-*   **Frontend**: Next.js 16, React 19, Tailwind CSS 4, Framer Motion
-*   **Blockchain**: Ethereum Sepolia Testnet, Solidity 0.8.19
-*   **Tooling**: Hardhat, Wagmi v3, Viem
-*   **AI Engine**: Sentiment.js, Hugging Face (optional)
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 16, React 19, TypeScript, Tailwind CSS |
+| **Blockchain** | WeilChain (Weilliptic Testnet) |
+| **Smart Contracts** | Rust + WebAssembly (WASM) |
+| **SDK** | @weilliptic/weil-sdk |
+| **Wallet** | WAuth (Weilliptic Wallet) |
 
 ---
 
@@ -47,40 +53,39 @@ Every pipeline run is recorded on the blockchain. Trust, but verify. We provide 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        USERS                                    │
-│     (Connect via MetaMask/WalletConnect - NO KEYS REQUIRED)     │
+│          (Connect via WAuth - Weilliptic Wallet)               │
 └─────────────────────────────────┬───────────────────────────────┘
                                   │
                     ┌─────────────▼─────────────┐
                     │     Next.js Frontend      │
-                    │   (Wagmi + Viem Hooks)    │
+                    │   (@weilliptic/weil-sdk)  │
                     └─────────────┬─────────────┘
                                   │
             ┌─────────────────────┼─────────────────────┐
             │                     │                     │
    ┌────────▼────────┐   ┌────────▼────────┐   ┌────────▼────────┐
-   │ AppletRegistry  │   │ ExecutionLogger │   │   AI Services   │
-   │   (Solidity)    │   │   (Solidity)    │   │   (Browser)     │
+   │ AppletRegistry  │   │   Marketplace   │   │   Yutaka Token  │
+   │   (NFT-based)   │   │   (Payments)    │   │   (Fungible)    │
    └─────────────────┘   └─────────────────┘   └─────────────────┘
+            │                     │                     │
+            └─────────────────────┼─────────────────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │      AI MCP Applets       │
+                    │  (TextSummarizer, etc.)   │
+                    └───────────────────────────┘
 ```
-
-**Key Point**: All user interactions use their **connected wallet** dynamically. No private keys are ever hardcoded or stored.
 
 ---
 
 ## ⚡ Getting Started
 
-### For Users (No Setup Required!)
-1. Visit the deployed app
-2. Connect your wallet (MetaMask, Rainbow, etc.)
-3. Start exploring applets and building pipelines!
+### Prerequisites
+- Node.js (v18+)
+- Rust + wasm32-unknown-unknown target (for contract development)
+- WAuth Wallet (browser extension)
 
-### For Developers
-
-#### Prerequisites
-*   Node.js (v18+)
-*   A Web3 wallet with Sepolia testnet ETH
-
-#### Installation
+### Installation
 
 ```bash
 # Clone the Repository
@@ -98,66 +103,106 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📦 Deployment Guide (For Administrators Only)
+## 📦 Smart Contracts
 
-> **Note**: This section is for deploying the smart contracts. Regular users don't need this.
+### Build Contracts
 
-### 1. Contract Deployment
-
-Create a `.env` file (this is gitignored and NEVER committed):
-
-```env
-# ADMIN ONLY - For deploying contracts
-PRIVATE_KEY=your_deployer_wallet_private_key
-SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_PROJECT_ID
-ETHERSCAN_API_KEY=optional_for_verification
-```
-
-Deploy:
 ```bash
-npx hardhat compile
-npx hardhat run scripts/deploy.ts --network sepolia
+# Navigate to contract directory
+cd wadk/applets/rust/fungible_token/yutaka
+
+# Build to WASM
+cargo build --release --target wasm32-unknown-unknown
 ```
 
-### 2. Configure Frontend
+### Deploy Contracts
 
-After deployment, update your `.env.local`:
-```env
-NEXT_PUBLIC_REGISTRY_ADDRESS=0x_deployed_registry_address
-NEXT_PUBLIC_EXECUTION_ADDRESS=0x_deployed_logger_address
-NEXT_PUBLIC_CHAIN_ID=11155111
-```
-
-### 3. Build & Deploy Frontend
 ```bash
-npm run build
-# Deploy to Vercel, Netlify, or your preferred host
+# Using wadk CLI
+wadk deploy --manifest manifest.json
+
+# Or via unweil.me web interface
+# Upload: yutaka.wasm + yutaka.widl
+```
+
+### Contract Structure
+
+```
+applets/
+├── nexus_token/          # NexusToken (NXS) - Payment token
+├── applet_registry/      # NFT registry for applets
+├── marketplace/          # Payment & execution orchestration
+├── ai/
+│   └── text_summarizer/  # MCP-enabled AI applet
+└── deploy_yutaka/        # Ready-to-deploy Yutaka token
 ```
 
 ---
 
-## 🔐 Security Model
+## 🔧 Environment Variables
 
-| Component | Security Approach |
-|-----------|-------------------|
-| User Wallets | Users connect their OWN wallets - no keys stored |
-| Contract Deployment | One-time admin action with secure key management |
+Create `.env.local`:
+
+```env
+# WeilChain Contract Addresses (after deployment)
+NEXT_PUBLIC_WEIL_TOKEN_ADDRESS=
+NEXT_PUBLIC_WEIL_REGISTRY_ADDRESS=
+NEXT_PUBLIC_WEIL_MARKETPLACE_ADDRESS=
+
+# WeilChain Network
+NEXT_PUBLIC_WEIL_NETWORK=testnet
+NEXT_PUBLIC_WEIL_ENDPOINT=https://sentinel.unweil.me
+```
+
+---
+
+## 🗂️ Project Structure
+
+```
+weilchain-nexus/
+├── src/
+│   ├── app/              # Next.js app router pages
+│   ├── components/       # React components
+│   ├── context/          # WeilProvider, MockDataContext
+│   └── hooks/            # Custom hooks (useYutakaToken, etc.)
+├── applets/              # Smart contracts (Rust/WASM)
+├── wadk/                 # WeilChain Applet Dev Kit (submodule)
+└── public/               # Static assets
+```
+
+---
+
+## 🏆 EIBS 2.0 Competition
+
+This project is built for the **EIBS 2.0 Blockchain Competition**, showcasing:
+
+1. ✅ **Native WeilChain Integration** - Built on Weilliptic testnet
+2. ✅ **On-Chain AI (MCP)** - Text summarization via HTTP outcalls
+3. ✅ **Cross-Contract Composition** - Pipeline execution
+4. ✅ **Token Economy** - Yutaka-based payment system
+5. ✅ **NFT Applets** - Applets as tradeable assets
+
+---
+
+## 🔐 Security
+
+| Component | Approach |
+|-----------|----------|
+| User Wallets | Users connect WAuth - no keys stored |
+| Contract Deployment | Via wadk CLI or unweil.me |
 | Transactions | Signed by user's wallet in real-time |
-| Private Keys | NEVER hardcoded, NEVER stored, NEVER transmitted |
 
 ---
 
-## 🏆 Innovation & Impact
+## 📚 Resources
 
-WeilChain Nexus solves the **fragmentation problem** in Web3. By standardizing input/output schemas for applets, we allow disparate tools to talk to each other. This opens the door for:
-*   **Automated DAO Governance** based on social sentiment.
-*   **Decentralized content moderation** pipelines.
-*   **Trustless financial reporting** from raw data input.
-
-**Built for Production. Ready for Scale.**
+- [WeilChain Documentation](https://docs.unweil.me)
+- [Weil SDK on npm](https://www.npmjs.com/package/@weilliptic/weil-sdk)
+- [wadk GitHub](https://github.com/weilliptic-public/wadk)
+- [unweil.me Explorer](https://unweil.me)
 
 ---
 
 <p align="center">
-  Made with ❤️ by Abra Code Abra
+  Made with ❤️ by <strong>Abra Code Abra</strong> for EIBS 2.0
 </p>

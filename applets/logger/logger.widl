@@ -1,15 +1,16 @@
-interface ExecutionLogger {
-    query func get_executions_by_user(user: string) -> Vec<Execution>;
-    query func get_execution_by_id(id: uint) -> Execution;
-    query func get_execution_count() -> uint;
-    mutate func log_execution(applet_ids: Vec<uint>, total_price: uint, result_hash: string) -> uint
-}
 
-struct Execution {
+record Execution {
     id: uint,
     user: string,
-    applet_ids: Vec<uint>,
+    applet_ids_json: string,
     total_price: uint,
     result_hash: string,
     timestamp: uint
+}
+
+interface ExecutionLogger {
+    query func get_execution_count() -> uint;
+    query func get_execution(id: uint) -> result<Execution, string>;
+    query func get_user_execution_count(user: string) -> uint;
+    mutate func log_execution(applet_ids_json: string, total_price: uint, result_hash: string) -> uint
 }

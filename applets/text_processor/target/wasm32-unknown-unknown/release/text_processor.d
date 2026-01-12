@@ -1,0 +1,1 @@
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\applets\text_processor\target\wasm32-unknown-unknown\release\text_processor.wasm: C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\applets\text_processor\src\lib.rs

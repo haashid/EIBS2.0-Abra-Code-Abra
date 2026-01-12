@@ -1,0 +1,10 @@
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\applets\target\wasm32-unknown-unknown\release\deps\unicase-4aa7b005784255cb.d: C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\lib.rs C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\ascii.rs C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\mod.rs C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\map.rs
+
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\applets\target\wasm32-unknown-unknown\release\deps\libunicase-4aa7b005784255cb.rlib: C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\lib.rs C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\ascii.rs C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\mod.rs C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\map.rs
+
+C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\applets\target\wasm32-unknown-unknown\release\deps\libunicase-4aa7b005784255cb.rmeta: C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\lib.rs C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\ascii.rs C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\mod.rs C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\map.rs
+
+C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\lib.rs:
+C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\ascii.rs:
+C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\mod.rs:
+C:\Users\haash\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\map.rs:

@@ -1,0 +1,26 @@
+// TextProcessor Applet - WIDL Interface
+// A simple applet that processes text on-chain
+
+record ProcessResult {
+    word_count: uint,
+    char_count: uint,
+    uppercase: string,
+    reversed: string
+}
+
+interface TextProcessor {
+    // Count words in text
+    query func word_count(text: string) -> uint;
+    
+    // Count characters in text
+    query func char_count(text: string) -> uint;
+    
+    // Convert to uppercase
+    query func to_uppercase(text: string) -> string;
+    
+    // Reverse the text
+    query func reverse_text(text: string) -> string;
+    
+    // Process text and return all results
+    mutate func process(text: string) -> ProcessResult;
+}

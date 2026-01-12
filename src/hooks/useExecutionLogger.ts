@@ -1,38 +1,50 @@
 "use client";
 
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
-import { keccak256, toBytes } from "viem";
-import ExecutionLoggerABI from "@/abis/ExecutionLogger.json";
+import { useWeil } from "@/context/WeilProvider";
+import { useState, useCallback } from "react";
 
-const EXECUTION_ADDRESS = process.env.NEXT_PUBLIC_EXECUTION_ADDRESS as `0x${string}` || "0x0000000000000000000000000000000000000000";
+const LOGGER_ADDRESS = process.env.NEXT_PUBLIC_WEIL_LOGGER_ADDRESS || "";
 
-// Type for Execution from contract
+// Type for Execution
 export interface ContractExecution {
-    id: bigint;
+    id: string;
     user: string;
     pipelineId: string;
-    appletIds: bigint[];
-    totalPrice: bigint;
+    appletIds: number[];
+    totalPrice: string;
     resultHash: string;
-    timestamp: bigint;
+    timestamp: number;
 }
 
 // Hook to read executions for current user
 export function useUserExecutions() {
-    const { address } = useAccount();
+    const { address, queryContract } = useWeil();
+    const [executions, setExecutions] = useState<ContractExecution[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const { data, isLoading, error, refetch } = useReadContract({
-        address: EXECUTION_ADDRESS,
-        abi: ExecutionLoggerABI,
-        functionName: "getExecutionsByUser",
-        args: address ? [address] : undefined,
-        query: {
-            enabled: !!address,
-        },
-    });
+    const refetch = useCallback(async () => {
+        if (!address || !LOGGER_ADDRESS) return;
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const result = await queryContract(
+                LOGGER_ADDRESS,
+                "get_executions_by_user",
+                { user: address }
+            );
+            setExecutions(result || []);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [address, queryContract]);
 
     return {
-        executions: (data as ContractExecution[] | undefined) || [],
+        executions,
         isLoading,
         error,
         refetch,
@@ -41,36 +53,50 @@ export function useUserExecutions() {
 
 // Hook to log a new execution
 export function useLogExecution() {
-    const { writeContract, data: hash, isPending, error } = useWriteContract();
+    const { executeContract, isConnected } = useWeil();
+    const [isPending, setIsPending] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-        hash,
-    });
-
-    const logExecution = async (
+    const logExecution = useCallback(async (
         appletIds: number[],
         totalPriceWei: bigint,
         resultData: any
     ) => {
-        // Create pipeline ID from applet IDs
-        const pipelineId = keccak256(toBytes(appletIds.join("-")));
+        if (!isConnected || !LOGGER_ADDRESS) {
+            throw new Error("Wallet not connected or logger address not set");
+        }
 
-        // Hash the result data
-        const resultHash = keccak256(toBytes(JSON.stringify(resultData)));
+        setIsPending(true);
+        setIsSuccess(false);
+        setError(null);
 
-        writeContract({
-            address: EXECUTION_ADDRESS,
-            abi: ExecutionLoggerABI,
-            functionName: "logExecution",
-            args: [pipelineId, appletIds.map(BigInt), totalPriceWei, resultHash],
-        });
-    };
+        try {
+            // Create result hash from data
+            const resultHash = btoa(JSON.stringify(resultData)).slice(0, 64);
+
+            await executeContract(
+                LOGGER_ADDRESS,
+                "log_execution",
+                {
+                    applet_ids: appletIds,
+                    total_price: totalPriceWei.toString(),
+                    result_hash: resultHash
+                }
+            );
+
+            setIsSuccess(true);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsPending(false);
+        }
+    }, [executeContract, isConnected]);
 
     return {
         logExecution,
-        hash,
         isPending,
-        isConfirming,
+        isConfirming: isPending,
         isSuccess,
         error,
     };

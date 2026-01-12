@@ -1,20 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { useWeil } from "@/context/WeilProvider";
 import { useEffect, useState } from "react";
 
 export default function Navbar() {
-    const { address, isConnected } = useAccount();
-    const { connect } = useConnect();
-    const { disconnect } = useDisconnect();
+    const { address, isConnected, connect, disconnect, isConnecting, error } = useWeil();
     const [mounted, setMounted] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    const handleConnect = async () => {
+        await connect();
+    };
 
     return (
         <nav className="sticky top-0 z-40 flex items-center justify-between p-4 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
@@ -31,8 +32,9 @@ export default function Navbar() {
 
                 {mounted && isConnected ? (
                     <div className="flex items-center gap-3 ml-4">
-                        <span className="text-xs text-gray-400 font-mono bg-gray-800 px-3 py-1.5 rounded-full">
-                            {address?.slice(0, 6)}...{address?.slice(-4)}
+                        <span className="text-xs text-gray-400 font-mono bg-gray-800 px-3 py-1.5 rounded-full flex items-center gap-2">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            {address?.slice(0, 8)}...{address?.slice(-6)}
                         </span>
                         <button
                             onClick={() => disconnect()}
@@ -43,10 +45,26 @@ export default function Navbar() {
                     </div>
                 ) : (
                     <button
-                        onClick={() => connect({ connector: injected() })}
-                        className="ml-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-all"
+                        onClick={handleConnect}
+                        disabled={isConnecting}
+                        className="ml-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-lg text-base font-semibold transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-blue-500/20"
                     >
-                        Connect Wallet
+                        {isConnecting ? (
+                            <>
+                                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                                Connecting...
+                            </>
+                        ) : (
+                            <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                Connect WAuth
+                            </>
+                        )}
                     </button>
                 )}
             </div>
@@ -92,10 +110,14 @@ export default function Navbar() {
                     </Link>
 
                     <div className="border-t border-gray-800 mt-2 pt-4">
+                        {error && (
+                            <p className="text-red-400 text-sm mb-3 px-4">{error}</p>
+                        )}
                         {mounted && isConnected ? (
                             <div className="flex flex-col gap-3">
-                                <span className="text-sm text-gray-400 font-mono bg-gray-800 px-4 py-2 rounded-lg text-center">
-                                    {address?.slice(0, 6)}...{address?.slice(-4)}
+                                <span className="text-sm text-gray-400 font-mono bg-gray-800 px-4 py-2 rounded-lg text-center flex items-center justify-center gap-2">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                    {address?.slice(0, 8)}...{address?.slice(-6)}
                                 </span>
                                 <button
                                     onClick={() => { disconnect(); setIsMobileMenuOpen(false); }}
@@ -106,10 +128,21 @@ export default function Navbar() {
                             </div>
                         ) : (
                             <button
-                                onClick={() => { connect({ connector: injected() }); setIsMobileMenuOpen(false); }}
-                                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors"
+                                onClick={() => { handleConnect(); setIsMobileMenuOpen(false); }}
+                                disabled={isConnecting}
+                                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                             >
-                                Connect Wallet
+                                {isConnecting ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                        Connecting...
+                                    </>
+                                ) : (
+                                    <>Connect WAuth</>
+                                )}
                             </button>
                         )}
                     </div>

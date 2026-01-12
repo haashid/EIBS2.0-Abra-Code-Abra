@@ -1,23 +1,11 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { WeilWalletConnection } from "@weilliptic/weil-sdk";
 
-// Sentinel endpoint for WeilChain
 const SENTINEL_ENDPOINT = process.env.NEXT_PUBLIC_SENTINEL_ENDPOINT || "https://sentinel.unweil.me";
-
-// Contract addresses (set after deployment)
 const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_WEIL_REGISTRY_ADDRESS || "";
 const LOGGER_ADDRESS = process.env.NEXT_PUBLIC_WEIL_LOGGER_ADDRESS || "";
-
-// Type for WAuth extension (browser injected)
-interface WAuthExtension {
-    isConnected: () => Promise<boolean>;
-    getAccounts: () => Promise<string[]>;
-    requestAccounts: () => Promise<string[]>;
-    signTransaction: (txn: any) => Promise<string>;
-    execute: (contractAddress: string, method: string, args: any) => Promise<any>;
-    query: (contractAddress: string, method: string, args: any) => Promise<any>;
-}
 
 interface WeilContextType {
     isConnected: boolean;
@@ -26,13 +14,12 @@ interface WeilContextType {
     disconnect: () => void;
     isConnecting: boolean;
     error: string | null;
-    // Contract execution helpers
     executeContract: (address: string, method: string, args: any) => Promise<any>;
     queryContract: (address: string, method: string, args: any) => Promise<any>;
-    // Pre-configured contract addresses
     registryAddress: string;
     loggerAddress: string;
     sentinelEndpoint: string;
+    wallet: WeilWalletConnection | null;
 }
 
 const WeilContext = createContext<WeilContextType | null>(null);
@@ -45,112 +32,112 @@ export function useWeil() {
     return context;
 }
 
-// Get WAuth extension from window
-function getWAuth(): WAuthExtension | null {
-    if (typeof window !== "undefined" && (window as any).wauth) {
-        return (window as any).wauth as WAuthExtension;
-    }
-    return null;
-}
-
 export function WeilProvider({ children }: { children: ReactNode }) {
     const [isConnected, setIsConnected] = useState(false);
     const [address, setAddress] = useState<string | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    // Check for existing WAuth wallet connection on mount
-    useEffect(() => {
-        checkExistingConnection();
-    }, []);
-
-    const checkExistingConnection = async () => {
-        try {
-            const wauth = getWAuth();
-            if (wauth) {
-                const connected = await wauth.isConnected();
-                if (connected) {
-                    const accounts = await wauth.getAccounts();
-                    if (accounts && accounts.length > 0) {
-                        setAddress(accounts[0]);
-                        setIsConnected(true);
-                    }
-                }
-            }
-        } catch (err) {
-            console.log("No existing WAuth connection");
-        }
-    };
+    const [wallet, setWallet] = useState<WeilWalletConnection | null>(null);
 
     const connect = useCallback(async () => {
         setIsConnecting(true);
         setError(null);
 
         try {
-            const wauth = getWAuth();
-
-            if (!wauth) {
-                throw new Error("WAuth wallet extension not found. Please install it from the Chrome Web Store: https://chromewebstore.google.com/detail/wauth/nmdlcegenjnehamofkaaifhgjibdpdag");
+            // Check for window.WeilWallet (as shown in Discord)
+            if (typeof window === "undefined") {
+                throw new Error("Not in browser context");
             }
 
-            // Request connection
-            const accounts = await wauth.requestAccounts();
+            const weilWallet = (window as any).WeilWallet;
+
+            if (!weilWallet) {
+                const keys = Object.keys(window).filter(k =>
+                    k.toLowerCase().includes('weil') || k.toLowerCase().includes('wauth')
+                );
+                throw new Error(`WeilWallet not found. Found: ${keys.join(', ') || 'none'}`);
+            }
+
+            // Create wallet connection (as shown in Discord)
+            const walletConnection = new WeilWalletConnection({
+                walletProvider: weilWallet
+            });
+
+            // Request accounts using weil_requestAccounts (mentioned in Discord)
+            const accounts = await weilWallet.request({ method: 'weil_requestAccounts' });
 
             if (!accounts || accounts.length === 0) {
-                throw new Error("No accounts found. Please create or import an account in WAuth.");
+                throw new Error("No accounts returned from WAuth");
             }
 
+            // Success!
+            setWallet(walletConnection);
             setAddress(accounts[0]);
             setIsConnected(true);
+
+            console.log("Connected to WAuth:", accounts[0]);
         } catch (err: any) {
-            setError(err.message || "Failed to connect wallet");
-            console.error("WAuth connection error:", err);
+            // Handle various error formats
+            let msg = "Failed to connect";
+            if (err.message) {
+                msg = err.message;
+            } else if (typeof err === 'string') {
+                msg = err;
+            } else if (err.code) {
+                msg = `Error code: ${err.code}`;
+            } else {
+                msg = `Connection failed: ${JSON.stringify(err)}`;
+            }
+            setError(msg);
+            console.error("WAuth connection error:", msg, err);
         } finally {
             setIsConnecting(false);
         }
     }, []);
 
     const disconnect = useCallback(() => {
+        setWallet(null);
         setAddress(null);
         setIsConnected(false);
         setError(null);
     }, []);
 
+    // Execute contract method (as shown in Discord)
     const executeContract = useCallback(async (
         contractAddress: string,
         method: string,
         args: any
     ): Promise<any> => {
-        const wauth = getWAuth();
-        if (!wauth || !isConnected) {
+        if (!wallet || !isConnected) {
             throw new Error("Wallet not connected");
         }
 
-        try {
-            const result = await wauth.execute(contractAddress, method, args);
-            return result;
-        } catch (err: any) {
-            throw new Error(`Contract execution failed: ${err.message}`);
-        }
-    }, [isConnected]);
+        // wallet.contracts.execute(address, methodName, args)
+        const result = await (wallet as any).contracts.execute(
+            contractAddress,
+            method,
+            args
+        );
+        return result;
+    }, [wallet, isConnected]);
 
     const queryContract = useCallback(async (
         contractAddress: string,
         method: string,
         args: any
     ): Promise<any> => {
-        const wauth = getWAuth();
-        if (!wauth) {
-            throw new Error("WAuth not available");
+        if (!wallet) {
+            throw new Error("Wallet not available");
         }
 
-        try {
-            const result = await wauth.query(contractAddress, method, args);
-            return result;
-        } catch (err: any) {
-            throw new Error(`Contract query failed: ${err.message}`);
-        }
-    }, []);
+        // For queries, might need contracts.query or similar
+        const result = await (wallet as any).contracts.execute(
+            contractAddress,
+            method,
+            args
+        );
+        return result;
+    }, [wallet]);
 
     const value: WeilContextType = {
         isConnected,
@@ -164,6 +151,7 @@ export function WeilProvider({ children }: { children: ReactNode }) {
         registryAddress: REGISTRY_ADDRESS,
         loggerAddress: LOGGER_ADDRESS,
         sentinelEndpoint: SENTINEL_ENDPOINT,
+        wallet,
     };
 
     return (

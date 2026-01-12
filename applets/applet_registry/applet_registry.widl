@@ -1,0 +1,41 @@
+// Applet details stored in each NFT
+record AppletDetails {
+    name: string,
+    description: string,
+    applet_address: string,
+    price: u64,
+    input_schema: string,
+    output_schema: string,
+    owner: string
+}
+
+interface AppletRegistry {
+    // Query functions
+    query func name() -> string;
+    query func balance_of(addr: string) -> uint;
+    query func owner_of(token_id: string) -> result<string, string>;
+    query func details(token_id: string) -> result<AppletDetails, string>;
+    query func get_all_applets() -> list<AppletDetails>;
+    query func get_applet_count() -> uint;
+    
+    // NFT transfer functions
+    mutate func approve(spender: string, token_id: string) -> result<(), string>;
+    mutate func set_approve_for_all(spender: string, approval: bool);
+    mutate func transfer(to_addr: string, token_id: string) -> result<(), string>;
+    mutate func transfer_from(from_addr: string, to_addr: string, token_id: string) -> result<(), string>;
+    query func get_approved(token_id: string) -> result<list<string>, string>;
+    query func is_approved_for_all(owner: string, spender: string) -> bool;
+    
+    // Applet registration
+    mutate func register_applet(
+        name: string,
+        description: string,
+        applet_address: string,
+        price: u64,
+        input_schema: string,
+        output_schema: string
+    ) -> result<string, string>;
+    
+    // Update price
+    mutate func update_price(token_id: string, new_price: u64) -> result<(), string>;
+}

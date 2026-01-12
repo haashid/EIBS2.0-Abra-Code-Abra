@@ -1,8 +1,10 @@
 "use client";
 
-import { useAccount } from "wagmi";
+import { useWeil } from "@/context/WeilProvider";
 import Navbar from "@/components/Navbar";
 import AppletCard from "@/components/AppletCard";
+import RegisterAppletModal from "@/components/RegisterAppletModal";
+import DeployContractModal from "@/components/DeployContractModal";
 import { parseEther, formatEther } from "viem";
 import React, { useState, useEffect } from "react";
 import { useMockData } from "@/context/MockDataContext";
@@ -10,12 +12,12 @@ import { useApplets, useRegisterApplet, ContractApplet } from "@/hooks/useApplet
 import { useRouter } from "next/navigation";
 
 // Check if we should use real contracts (non-zero address)
-const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_REGISTRY_ADDRESS || "";
-const USE_REAL_CONTRACTS = REGISTRY_ADDRESS && REGISTRY_ADDRESS !== "0x0000000000000000000000000000000000000000";
+const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_WEIL_REGISTRY_ADDRESS || "";
+const USE_REAL_CONTRACTS = REGISTRY_ADDRESS && REGISTRY_ADDRESS.length > 10;
 
 export default function Marketplace() {
     const router = useRouter();
-    const { isConnected, address } = useAccount();
+    const { isConnected, address } = useWeil();
 
     // Mock data hooks (fallback)
     const { applets: mockApplets, registerApplet: mockRegisterApplet } = useMockData();
@@ -28,12 +30,12 @@ export default function Marketplace() {
     useEffect(() => {
         if (isSuccess) {
             refetch();
-            setIsRegisterOpen(false);
-            resetForm();
+            setIsDeployOpen(false);
         }
     }, [isSuccess, refetch]);
 
-    const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+    const [isDeployOpen, setIsDeployOpen] = useState(false);
+    const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedAppletId, setSelectedAppletId] = useState<number | null>(null);
 
@@ -41,38 +43,10 @@ export default function Marketplace() {
         router.push(`/pipeline?appletId=${id}`);
     };
 
-    // Form State
-    const [newAppletName, setNewAppletName] = useState("");
-    const [newAppletPrice, setNewAppletPrice] = useState("");
-    const [newAppletDesc, setNewAppletDesc] = useState("");
-    const [newAppletInputSchema, setNewAppletInputSchema] = useState("Text");
-    const [newAppletOutputSchema, setNewAppletOutputSchema] = useState("JSON");
 
-    const resetForm = () => {
-        setNewAppletName("");
-        setNewAppletPrice("");
-        setNewAppletDesc("");
-        setNewAppletInputSchema("Text");
-        setNewAppletOutputSchema("JSON");
-    };
-
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newAppletName || !newAppletPrice) return;
-
-        if (USE_REAL_CONTRACTS) {
-            // Real contract registration
-            await contractRegister(newAppletName, newAppletDesc, newAppletPrice, newAppletInputSchema, newAppletOutputSchema);
-        } else {
-            // Mock registration
-            mockRegisterApplet(newAppletName, newAppletDesc, newAppletPrice, newAppletInputSchema, newAppletOutputSchema);
-            setIsRegisterOpen(false);
-            resetForm();
-        }
-    };
 
     // Determine which data source to use
-    const applets = USE_REAL_CONTRACTS
+    const applets = USE_REAL_CONTRACTS && Array.isArray(contractApplets)
         ? contractApplets.map((a: ContractApplet) => ({
             id: Number(a.id),
             name: a.name,
@@ -176,92 +150,30 @@ export default function Marketplace() {
                             className="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-4 py-2.5 sm:py-3 text-white focus:outline-none focus:border-blue-500 text-sm sm:text-base"
                         />
                         <button
-                            onClick={() => setIsRegisterOpen(!isRegisterOpen)}
+                            onClick={() => setIsDeployModalOpen(true)}
                             disabled={!isConnected}
                             className={`whitespace-nowrap px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${isConnected
-                                ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                                ? 'bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white shadow-lg shadow-cyan-500/20'
+                                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                }`}
+                            title={!isConnected ? "Connect Wallet to Deploy" : ""}
+                        >
+                            🚀 Deploy Contract
+                        </button>
+                        <button
+                            onClick={() => setIsDeployOpen(true)}
+                            disabled={!isConnected}
+                            className={`whitespace-nowrap px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${isConnected
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-blue-500/20'
                                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                 }`}
                             title={!isConnected ? "Connect Wallet to Register" : ""}
                         >
-                            {isRegisterOpen ? 'Close' : isConnected ? 'Register Applet' : 'Connect to Register'}
+                            📝 Register Applet
                         </button>
                     </div>
                 </div>
 
-                {/* Registration Form */}
-                {isRegisterOpen && (
-                    <div className="mb-8 sm:mb-12 p-4 sm:p-6 md:p-8 bg-gray-900/50 border border-gray-800 rounded-xl sm:rounded-2xl">
-                        <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Register New Applet</h2>
-                        <form className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6" onSubmit={handleRegister}>
-                            <div className="space-y-2">
-                                <label className="text-xs sm:text-sm font-medium text-gray-400">Applet Name</label>
-                                <input
-                                    type="text"
-                                    value={newAppletName}
-                                    onChange={(e) => setNewAppletName(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base"
-                                    placeholder="e.g. Text Summarizer"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs sm:text-sm font-medium text-gray-400">Price (ETH)</label>
-                                <input
-                                    type="number"
-                                    step="0.001"
-                                    value={newAppletPrice}
-                                    onChange={(e) => setNewAppletPrice(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base"
-                                    placeholder="0.05"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs sm:text-sm font-medium text-gray-400">Input Type</label>
-                                <select
-                                    value={newAppletInputSchema}
-                                    onChange={(e) => setNewAppletInputSchema(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors text-white text-sm sm:text-base"
-                                >
-                                    <option>Text</option>
-                                    <option>Image</option>
-                                    <option>CSV</option>
-                                    <option>JSON</option>
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs sm:text-sm font-medium text-gray-400">Output Type</label>
-                                <select
-                                    value={newAppletOutputSchema}
-                                    onChange={(e) => setNewAppletOutputSchema(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors text-white text-sm sm:text-base"
-                                >
-                                    <option>JSON</option>
-                                    <option>Text</option>
-                                    <option>Image</option>
-                                    <option>CSV</option>
-                                </select>
-                            </div>
-                            <div className="sm:col-span-2 space-y-2">
-                                <label className="text-xs sm:text-sm font-medium text-gray-400">Description</label>
-                                <textarea
-                                    value={newAppletDesc}
-                                    onChange={(e) => setNewAppletDesc(e.target.value)}
-                                    className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-blue-500 transition-colors h-24 sm:h-32 text-sm sm:text-base"
-                                    placeholder="Describe functionality..."
-                                />
-                            </div>
-                            <div className="sm:col-span-2">
-                                <button
-                                    disabled={isPending || isConfirming}
-                                    className={`w-full py-2.5 sm:py-3 font-medium rounded-lg border transition-colors text-sm sm:text-base ${isPending || isConfirming ? 'bg-gray-700 text-gray-400 border-gray-600 cursor-wait' : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'}`}
-                                >
-                                    {isPending ? 'Awaiting Confirmation...' : isConfirming ? 'Confirming...' : USE_REAL_CONTRACTS ? 'Register on Blockchain' : 'Register (Mock)'}
-                                </button>
-                                {registerError && <p className="text-red-400 text-sm mt-2">{registerError.message}</p>}
-                            </div>
-                        </form>
-                    </div>
-                )}
 
                 {/* Applet Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -286,6 +198,35 @@ export default function Marketplace() {
                     )}
                 </div>
             </main>
+
+            {/* Register Deployed Applet Modal */}
+            <RegisterAppletModal
+                isOpen={isDeployOpen}
+                onClose={() => setIsDeployOpen(false)}
+                onSuccess={(appletData) => {
+                    console.log("Registered:", appletData);
+                    // Add to mock data so it shows immediately
+                    mockRegisterApplet(
+                        appletData.name,
+                        appletData.description,
+                        appletData.price,
+                        appletData.inputSchema,
+                        appletData.outputSchema
+                    );
+                    refetch();
+                    setIsDeployOpen(false);
+                }}
+            />
+
+            {/* Deploy Contract Modal */}
+            <DeployContractModal
+                isOpen={isDeployModalOpen}
+                onClose={() => setIsDeployModalOpen(false)}
+                onSuccess={(address) => {
+                    console.log("Deployed contract at:", address);
+                    setIsDeployModalOpen(false);
+                }}
+            />
         </div>
     );
 }
