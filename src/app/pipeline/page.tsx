@@ -2,19 +2,19 @@
 
 import Navbar from "@/components/Navbar";
 import PipelineBuilder from "@/components/PipelineBuilder";
-import { parseEther, formatEther } from "viem";
 import { useState, Suspense } from "react";
 import Sentiment from "sentiment";
-import { useMockData } from "@/context/MockDataContext";
 import { useWeil } from "@/context/WeilProvider";
 import { useSearchParams } from "next/navigation";
+import { useApplets, ContractApplet } from "@/hooks/useAppletRegistry";
+
 
 function PipelineContent() {
     const searchParams = useSearchParams();
     const initialAppletId = searchParams.get("appletId") ? Number(searchParams.get("appletId")) : null;
 
     const { isConnected, executeContract, queryContract, registryAddress, loggerAddress, wallet } = useWeil();
-    const { applets, logExecution } = useMockData();
+    const { applets: contractApplets } = useApplets();
     const [executionResult, setExecutionResult] = useState<string | null>(null);
     const [sentimentResult, setSentimentResult] = useState<any>(null);
     const [summaryResult, setSummaryResult] = useState<string | null>(null);
@@ -23,11 +23,19 @@ function PipelineContent() {
     const [onChainResult, setOnChainResult] = useState<any>(null);
     const [executionError, setExecutionError] = useState<string | null>(null);
 
-    // Convert price string to bigint for compatibility with existing components
-    const availableApplets = applets.map(a => ({
-        ...a,
-        price: parseEther(a.price)
-    }));
+    // Use real contract data
+    const availableApplets = Array.isArray(contractApplets)
+        ? contractApplets.map((a: ContractApplet) => ({
+            id: Number(a.token_id) || 0,
+            name: a.name,
+            description: a.description,
+            price: BigInt(a.price || 0),
+            owner: a.owner,
+            inputSchema: a.input_schema || "JSON",
+            outputSchema: a.output_schema || "JSON",
+            isActive: true,
+        }))
+        : [];
 
     const handleExecute = async (appletIds: number[], totalPrice: bigint, inputData: string) => {
         setExecutionResult("processing");
@@ -164,12 +172,11 @@ function PipelineContent() {
                 }
             }
 
-            // Log to local mock history as fallback
-            logExecution(appletIds, formatEther(totalPrice), {
-                sentiment: sentimentResult,
-                summary: summaryResult,
-                cryptoPrice: paramCryptoPrice,
-                onChain: onChainResult
+            // Execution logged on-chain above
+            console.log("Pipeline execution complete", {
+                appletIds,
+                totalPrice: totalPrice.toString(),
+                result: { sentiment: sentimentResult, summary: summaryResult, cryptoPrice: paramCryptoPrice }
             });
 
             setCryptoPriceResult(paramCryptoPrice);

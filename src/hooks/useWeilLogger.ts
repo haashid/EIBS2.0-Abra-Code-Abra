@@ -7,7 +7,7 @@ import { useWeil } from "@/context/WeilProvider";
 export interface WeilExecution {
     id: number;
     user: string;
-    applet_ids: number[];
+    applet_ids_json: string;
     total_price: number;
     result_hash: string;
     timestamp: number;
@@ -18,27 +18,37 @@ export function useWeilLogger() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Get executions for current user
-    const getMyExecutions = useCallback(async (): Promise<WeilExecution[]> => {
+    // Get execution count for current user
+    const getMyExecutionCount = useCallback(async (): Promise<number> => {
         if (!loggerAddress || !address) {
-            return [];
+            return 0;
         }
-
-        setIsLoading(true);
-        setError(null);
 
         try {
-            const result = await queryContract(loggerAddress, "get_executions_by_user", {
+            const result = await queryContract(loggerAddress, "get_user_execution_count", {
                 user: address,
             });
-            return result || [];
+            return result || 0;
         } catch (err: any) {
-            setError(err.message);
-            return [];
-        } finally {
-            setIsLoading(false);
+            console.error("Failed to get execution count:", err);
+            return 0;
         }
     }, [queryContract, loggerAddress, address]);
+
+    // Get total execution count
+    const getTotalExecutionCount = useCallback(async (): Promise<number> => {
+        if (!loggerAddress) {
+            return 0;
+        }
+
+        try {
+            const result = await queryContract(loggerAddress, "get_execution_count", {});
+            return result || 0;
+        } catch (err: any) {
+            console.error("Failed to get total execution count:", err);
+            return 0;
+        }
+    }, [queryContract, loggerAddress]);
 
     // Log a new execution
     const logExecution = useCallback(async (
@@ -55,8 +65,11 @@ export function useWeilLogger() {
         setError(null);
 
         try {
+            // Convert applet IDs array to JSON string as contract expects
+            const appletIdsJson = JSON.stringify(appletIds);
+
             const result = await executeContract(loggerAddress, "log_execution", {
-                applet_ids: appletIds,
+                applet_ids_json: appletIdsJson,
                 total_price: totalPrice,
                 result_hash: resultHash,
             });
@@ -76,7 +89,7 @@ export function useWeilLogger() {
         }
 
         try {
-            const result = await queryContract(loggerAddress, "get_execution_by_id", { id });
+            const result = await queryContract(loggerAddress, "get_execution", { id });
             return result || null;
         } catch (err: any) {
             setError(err.message);
@@ -85,7 +98,8 @@ export function useWeilLogger() {
     }, [queryContract, loggerAddress]);
 
     return {
-        getMyExecutions,
+        getMyExecutionCount,
+        getTotalExecutionCount,
         logExecution,
         getExecutionById,
         isLoading,

@@ -42,6 +42,7 @@
     "contracts",
     "test",
     "wadk-0.1.0",
+    "wadk",
     "applets"
   ]
 }

@@ -37,19 +37,45 @@ export function useApplets() {
         setError(null);
 
         try {
-            // Query Marketplace for all listed applets
-            const contractToQuery = MARKETPLACE_ADDRESS || REGISTRY_ADDRESS;
-            const methodName = MARKETPLACE_ADDRESS ? "get_all_listed_applets" : "get_all_applets";
+            const contractToQuery = REGISTRY_ADDRESS;
 
-            const result = await queryContract(
-                contractToQuery,
-                methodName,
-                {}
-            );
-            setApplets(result || []);
+            console.log("[Applets] Querying get_all_applets from:", contractToQuery);
+
+            // Try get_all_applets directly
+            const result = await queryContract(contractToQuery, "get_all_applets", {});
+
+            console.log("[Applets] get_all_applets raw result:", result);
+            console.log("[Applets] result type:", typeof result);
+            console.log("[Applets] result is array:", Array.isArray(result));
+
+            // Handle various response formats
+            let appletList: any[] = [];
+            if (Array.isArray(result)) {
+                appletList = result;
+            } else if (result?.Ok && Array.isArray(result.Ok)) {
+                appletList = result.Ok;
+            } else if (result?.data && Array.isArray(result.data)) {
+                appletList = result.data;
+            }
+
+            console.log("[Applets] Parsed list:", appletList);
+
+            const fetchedApplets: ContractApplet[] = appletList.map((applet, i) => ({
+                token_id: String(applet.token_id ?? applet.id ?? i),
+                name: applet.name || `Applet ${i}`,
+                description: applet.description || "",
+                applet_address: applet.applet_address || "",
+                price: Number(applet.price) || 0,
+                input_schema: applet.input_schema || "JSON",
+                output_schema: applet.output_schema || "JSON",
+                owner: applet.owner || "",
+            }));
+
+            console.log("[Applets] Mapped applets:", fetchedApplets);
+            setApplets(fetchedApplets);
         } catch (err: any) {
             setError(err.message);
-            console.error("Failed to fetch applets:", err);
+            console.error("[Applets] Failed to fetch applets:", err);
         } finally {
             setIsLoading(false);
         }
@@ -82,7 +108,8 @@ export function useRegisterApplet() {
     const registerApplet = useCallback(async (
         name: string,
         description: string,
-        priceInEther: string,
+        appletAddress: string,  // Contract address of the deployed applet
+        priceInTokens: number,
         inputSchema: string,
         outputSchema: string
     ) => {
@@ -97,20 +124,19 @@ export function useRegisterApplet() {
         setTxHash(null);
 
         try {
-            // Convert price to uint (in smallest unit)
-            const priceUint = Math.floor(parseFloat(priceInEther) * 1e18);
-
             console.log("Registering applet on chain:", {
-                name, description, price: priceUint, inputSchema, outputSchema
+                name, description, appletAddress, price: priceInTokens, inputSchema, outputSchema
             });
 
+            // New registry signature with applet_address
             const result = await wallet.contracts.execute(
                 REGISTRY_ADDRESS,
                 "register_applet",
                 {
                     name,
                     description,
-                    price: priceUint,
+                    applet_address: appletAddress,
+                    price: priceInTokens,
                     input_schema: inputSchema,
                     output_schema: outputSchema
                 }

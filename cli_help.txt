@@ -1,0 +1,50 @@
+No previous history.
+Welcome to the Weilliptic Command Line Interface
+    @@@@@@@@@@@\                    /@@@@
+  @@@@        @@@@@@              @@@@@
+ @@@             @@@@@         /@@@@
+@@@@                @@@@\    @@@@@
+@@@#                  @@@@@@@@@
+@@@@                @@@@/    @@@@@
+ @@@             @@@@@         \@@@@
+  @@@@       @@@@@@               @@@@@
+    @@@@@@@@@@@/                    \@@@@@
+
+
+
+Private key file not found. Use the `wallet setup` command.
+
+
+Commands:
+  quit
+          Quit the Weilliptic CLI.
+  connect
+          Connect.
+  deploy
+          Deploy Weil Applet.
+  register_identity_tokens
+          Adds security applets to enable implementing
+          secured applets.
+  execute
+          Execute Weil Applet.
+  get_contract_details
+          Get WIDL Details.
+  list_weilpods
+          List all the commands in Weilliptic
+  load_assets
+          Load Static Assets on the Weil Applet.
+  get_txn_status
+          Retrieve Transaction Status given a ticket.
+  upgrade
+          Upgrade Weil Applet.
+  wallet
+          Sets up a Wallet
+  add_default_mcps
+          Add default MCPs to chatbot.
+  set_permissions
+          Set Permissions for Identity Applet.
+  help
+          Print this message or the help of the given
+          subcommand(s)
+
+CTRL-D

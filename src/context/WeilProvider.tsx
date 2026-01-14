@@ -6,6 +6,7 @@ import { WeilWalletConnection } from "@weilliptic/weil-sdk";
 const SENTINEL_ENDPOINT = process.env.NEXT_PUBLIC_SENTINEL_ENDPOINT || "https://sentinel.unweil.me";
 const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_WEIL_REGISTRY_ADDRESS || "";
 const LOGGER_ADDRESS = process.env.NEXT_PUBLIC_WEIL_LOGGER_ADDRESS || "";
+const POD_ID = process.env.NEXT_PUBLIC_WEIL_POD_ID || "";
 
 interface WeilContextType {
     isConnected: boolean;
@@ -19,6 +20,7 @@ interface WeilContextType {
     registryAddress: string;
     loggerAddress: string;
     sentinelEndpoint: string;
+    podId: string;
     wallet: WeilWalletConnection | null;
 }
 
@@ -65,17 +67,34 @@ export function WeilProvider({ children }: { children: ReactNode }) {
 
             // Request accounts using weil_requestAccounts (mentioned in Discord)
             const accounts = await weilWallet.request({ method: 'weil_requestAccounts' });
+            console.log("[WAuth] Raw accounts response:", accounts, typeof accounts);
 
-            if (!accounts || accounts.length === 0) {
-                throw new Error("No accounts returned from WAuth");
+            // Try to extract address from different response formats
+            let userAddress: string | null = null;
+            if (Array.isArray(accounts) && accounts.length > 0) {
+                userAddress = accounts[0];
+            } else if (typeof accounts === 'string') {
+                userAddress = accounts;
+            } else if (accounts?.accounts && Array.isArray(accounts.accounts) && accounts.accounts.length > 0) {
+                // WAuth returns {type: '...', accounts: [...], requestId: '...'}
+                userAddress = accounts.accounts[0];
+            } else if (accounts?.address) {
+                userAddress = accounts.address;
+            } else if (accounts?.result) {
+                userAddress = Array.isArray(accounts.result) ? accounts.result[0] : accounts.result;
+            }
+
+            if (!userAddress) {
+                console.warn("[WAuth] Could not extract address from:", accounts);
+                // Continue anyway - wallet is connected but address unknown
             }
 
             // Success!
             setWallet(walletConnection);
-            setAddress(accounts[0]);
+            setAddress(userAddress);
             setIsConnected(true);
 
-            console.log("Connected to WAuth:", accounts[0]);
+            console.log("Connected to WAuth:", userAddress);
         } catch (err: any) {
             // Handle various error formats
             let msg = "Failed to connect";
@@ -113,12 +132,20 @@ export function WeilProvider({ children }: { children: ReactNode }) {
         }
 
         // wallet.contracts.execute(address, methodName, args)
-        const result = await (wallet as any).contracts.execute(
+        const response = await (wallet as any).contracts.execute(
             contractAddress,
             method,
             args
         );
-        return result;
+
+        console.log("[WeilSDK] execute raw response:", response);
+
+        // Extract actual result from SDK response wrapper
+        if (response?.result !== undefined) return response.result;
+        if (response?.data !== undefined) return response.data;
+        if (response?.Ok !== undefined) return response.Ok;
+        if (response?.value !== undefined) return response.value;
+        return response;
     }, [wallet, isConnected]);
 
     const queryContract = useCallback(async (
@@ -131,12 +158,43 @@ export function WeilProvider({ children }: { children: ReactNode }) {
         }
 
         // For queries, might need contracts.query or similar
-        const result = await (wallet as any).contracts.execute(
+        const response = await (wallet as any).contracts.execute(
             contractAddress,
             method,
             args
         );
-        return result;
+
+        console.log("[WeilSDK] query raw response:", response);
+        console.log("[WeilSDK] response keys:", response ? Object.keys(response) : 'null');
+
+        // Log potential data fields
+        if (response) {
+            console.log("[WeilSDK] response.result:", response.result);
+            console.log("[WeilSDK] response.data:", response.data);
+            console.log("[WeilSDK] response.txn_result:", response.txn_result);
+            console.log("[WeilSDK] response.payload:", response.payload);
+            console.log("[WeilSDK] response.contracts:", response.contracts);
+        }
+
+        // Extract actual result from SDK response wrapper - try many fields
+        if (response?.result !== undefined) return response.result;
+        if (response?.data !== undefined) return response.data;
+        if (response?.txn_result !== undefined) {
+            // txn_result might be JSON string or object
+            if (typeof response.txn_result === 'string') {
+                try {
+                    return JSON.parse(response.txn_result);
+                } catch {
+                    return response.txn_result;
+                }
+            }
+            return response.txn_result;
+        }
+        if (response?.Ok !== undefined) return response.Ok;
+        if (response?.value !== undefined) return response.value;
+        if (response?.payload !== undefined) return response.payload;
+        if (response?.contracts !== undefined) return response.contracts;
+        return response;
     }, [wallet]);
 
     const value: WeilContextType = {
@@ -151,6 +209,7 @@ export function WeilProvider({ children }: { children: ReactNode }) {
         registryAddress: REGISTRY_ADDRESS,
         loggerAddress: LOGGER_ADDRESS,
         sentinelEndpoint: SENTINEL_ENDPOINT,
+        podId: POD_ID,
         wallet,
     };
 

@@ -5,9 +5,8 @@ import Navbar from "@/components/Navbar";
 import AppletCard from "@/components/AppletCard";
 import RegisterAppletModal from "@/components/RegisterAppletModal";
 import DeployContractModal from "@/components/DeployContractModal";
-import { parseEther, formatEther } from "viem";
+import ExecuteAppletModal from "@/components/ExecuteAppletModal";
 import React, { useState, useEffect } from "react";
-import { useMockData } from "@/context/MockDataContext";
 import { useApplets, useRegisterApplet, ContractApplet } from "@/hooks/useAppletRegistry";
 import { useRouter } from "next/navigation";
 
@@ -19,8 +18,6 @@ export default function Marketplace() {
     const router = useRouter();
     const { isConnected, address } = useWeil();
 
-    // Mock data hooks (fallback)
-    const { applets: mockApplets, registerApplet: mockRegisterApplet } = useMockData();
 
     // Real contract hooks
     const { applets: contractApplets, isLoading: contractLoading, refetch } = useApplets();
@@ -36,6 +33,8 @@ export default function Marketplace() {
 
     const [isDeployOpen, setIsDeployOpen] = useState(false);
     const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
+    const [isExecuteOpen, setIsExecuteOpen] = useState(false);
+    const [executeAppletAddress, setExecuteAppletAddress] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedAppletId, setSelectedAppletId] = useState<number | null>(null);
 
@@ -43,25 +42,23 @@ export default function Marketplace() {
         router.push(`/pipeline?appletId=${id}`);
     };
 
-
-
-    // Determine which data source to use
-    const applets = USE_REAL_CONTRACTS && Array.isArray(contractApplets)
-        ? contractApplets.map((a: ContractApplet) => ({
-            id: Number(a.id),
+    // Combine contract applets with sample applets
+    const contractMappedApplets = Array.isArray(contractApplets)
+        ? contractApplets.map((a: ContractApplet, idx: number) => ({
+            id: 100 + idx,
             name: a.name,
             description: a.description,
             price: a.price,
             owner: a.owner,
-            inputSchema: "JSON", // Placeholder - would need schema decode
-            outputSchema: "JSON",
-            isActive: a.isActive,
+            appletAddress: a.applet_address,
+            inputSchema: a.input_schema || "JSON",
+            outputSchema: a.output_schema || "JSON",
+            isActive: true,
         }))
-        : mockApplets.map(a => ({
-            ...a,
-            price: parseEther(a.price),
-            isActive: true
-        }));
+        : [];
+
+    // Use only contract applets
+    const applets = [...contractMappedApplets];
 
     // Filter applets based on search query
     const filteredApplets = applets.filter((a: any) =>
@@ -171,6 +168,17 @@ export default function Marketplace() {
                         >
                             📝 Register Applet
                         </button>
+                        <button
+                            onClick={() => setIsExecuteOpen(true)}
+                            disabled={!isConnected}
+                            className={`whitespace-nowrap px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${isConnected
+                                ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-500/20'
+                                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                }`}
+                            title={!isConnected ? "Connect Wallet to Execute" : ""}
+                        >
+                            ⚡ Execute
+                        </button>
                     </div>
                 </div>
 
@@ -204,15 +212,8 @@ export default function Marketplace() {
                 isOpen={isDeployOpen}
                 onClose={() => setIsDeployOpen(false)}
                 onSuccess={(appletData) => {
-                    console.log("Registered:", appletData);
-                    // Add to mock data so it shows immediately
-                    mockRegisterApplet(
-                        appletData.name,
-                        appletData.description,
-                        appletData.price,
-                        appletData.inputSchema,
-                        appletData.outputSchema
-                    );
+                    console.log("Registered applet:", appletData);
+                    // Refetch to get updated list from contract
                     refetch();
                     setIsDeployOpen(false);
                 }}
@@ -225,6 +226,16 @@ export default function Marketplace() {
                 onSuccess={(address) => {
                     console.log("Deployed contract at:", address);
                     setIsDeployModalOpen(false);
+                }}
+            />
+
+            {/* Execute Applet Modal */}
+            <ExecuteAppletModal
+                isOpen={isExecuteOpen}
+                onClose={() => setIsExecuteOpen(false)}
+                appletAddress={executeAppletAddress}
+                onSuccess={(result) => {
+                    console.log("Applet execution result:", result);
                 }}
             />
         </div>

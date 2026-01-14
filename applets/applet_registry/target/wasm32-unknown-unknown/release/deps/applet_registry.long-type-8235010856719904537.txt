@@ -1,0 +1,2 @@
+HashMap<std::string::String, AppletDetails>
+HashMap<std::string::String, AppletDetails>: WeilType

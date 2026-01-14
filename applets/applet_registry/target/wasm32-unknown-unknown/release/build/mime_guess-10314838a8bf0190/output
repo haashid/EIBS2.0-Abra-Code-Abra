@@ -1,0 +1,1 @@
+cargo:rustc-env=MIME_TYPES_GENERATED_PATH=C:\Users\haash\.gemini\antigravity\scratch\weilchain-nexus\applets\applet_registry\target\wasm32-unknown-unknown\release\build\mime_guess-10314838a8bf0190\out\mime_types_generated.rs

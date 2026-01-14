@@ -1,0 +1,22 @@
+No previous history.
+Welcome to the Weilliptic Command Line Interface
+    @@@@@@@@@@@\                    /@@@@
+  @@@@        @@@@@@              @@@@@
+ @@@             @@@@@         /@@@@
+@@@@                @@@@\    @@@@@
+@@@#                  @@@@@@@@@
+@@@@                @@@@/    @@@@@
+ @@@             @@@@@         \@@@@
+  @@@@       @@@@@@               @@@@@
+    @@@@@@@@@@@/                    \@@@@@
+
+
+
+Private key file not found. Use the `wallet setup` command.
+
+
+error: unexpected argument 'help' found
+
+Usage: deploy [OPTIONS] --file-path <file-path> --widl-file <widl-file>
+
+CTRL-D

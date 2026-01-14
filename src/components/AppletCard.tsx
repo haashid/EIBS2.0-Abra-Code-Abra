@@ -1,4 +1,4 @@
-import { formatEther } from "viem";
+// AppletCard component
 
 interface AppletProps {
     id: number;
@@ -40,7 +40,7 @@ export default function AppletCard({ id, name, description, price, owner, isActi
                     </button>
                     <div className="flex flex-col text-right">
                         <span className="text-xs text-gray-500">Price</span>
-                        <span className="text-lg font-bold text-white font-mono">{formatEther(price)} ETH</span>
+                        <span className="text-lg font-bold text-white font-mono">{(Number(price) / 1e18).toFixed(4)} YTK</span>
                     </div>
                 </div>
 

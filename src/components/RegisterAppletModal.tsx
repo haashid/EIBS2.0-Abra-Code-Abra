@@ -38,8 +38,8 @@ export default function RegisterAppletModal({ isOpen, onClose, onSuccess }: Regi
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!contractAddress || !name) {
-            setError("Contract address and name are required");
+        if (!name || !contractAddress) {
+            setError("Applet name and contract address are required");
             return;
         }
 
@@ -62,26 +62,62 @@ export default function RegisterAppletModal({ isOpen, onClose, onSuccess }: Regi
             const priceUint = Math.floor(parseFloat(price) * 1e18);
 
             // Call the registry contract to register the applet
+            // New registry with applet_address: (name, description, applet_address, price, input_schema, output_schema)
             const result = await (wallet as any).contracts.execute(
                 REGISTRY_ADDRESS,
                 "register_applet",
                 {
                     name,
                     description,
-                    price: priceUint,
                     applet_address: contractAddress,
+                    price: priceUint,
                     input_schema: inputSchema,
                     output_schema: outputSchema
                 }
             );
 
-            console.log("Registration result:", result);
+            console.log("=== REGISTRATION RESPONSE DEEP ANALYSIS ===");
+            console.log("Raw result:", result);
+            console.log("Result type:", typeof result);
+            console.log("Result keys:", result ? Object.keys(result) : 'null');
+
+            // Inspect critical fields
+            console.log("status:", result?.status);
+            console.log("txn_result:", result?.txn_result);
+            console.log("data:", result?.data);
+            console.log("message:", result?.message);
+            console.log("error:", result?.error);
+            console.log("Err:", result?.Err);
+            console.log("method_kind:", result?.method_kind);
+            console.log("contract_address:", result?.contract_address);
+
+            // Check all possible failure indicators
+            const isFailed =
+                result?.status === 'failure' ||
+                result?.status === 'error' ||
+                result?.txn_result?.Err ||
+                result?.Err ||
+                result?.error ||
+                result?.message?.toLowerCase?.()?.includes?.('error') ||
+                result?.message?.toLowerCase?.()?.includes?.('fail');
+
+            if (isFailed) {
+                const errMsg = result?.message || result?.txn_result?.Err || result?.Err || result?.error || 'Unknown error';
+                console.error("Transaction FAILED:", errMsg);
+                throw new Error(`Transaction failed: ${JSON.stringify(errMsg)}`);
+            }
+
+            // Check if we got a transaction ID (indicates submission at least)
+            const txId = result?.transaction_id || result?.txId || result?.requestId;
+            console.log("Transaction ID:", txId);
+            console.log("=== END ANALYSIS ===");
+
             setProgress("Done!");
             setSuccess(true);
 
             if (onSuccess) {
                 onSuccess({
-                    contractAddress,
+                    contractAddress: txId || '',
                     name,
                     description,
                     price,
@@ -121,8 +157,8 @@ export default function RegisterAppletModal({ isOpen, onClose, onSuccess }: Regi
                 {/* Instructions */}
                 <div className="p-4 mx-6 mt-4 bg-blue-900/20 border border-blue-800 rounded-lg">
                     <p className="text-blue-300 text-sm">
-                        <strong>Step 1:</strong> Deploy your applet via <a href="https://unweil.me" target="_blank" className="underline">unweil.me</a> or CLI<br />
-                        <strong>Step 2:</strong> Paste your contract address below<br />
+                        <strong>Step 1:</strong> Deploy your applet via <a href="https://unweil.me" target="_blank" className="underline">unweil.me</a><br />
+                        <strong>Step 2:</strong> Enter your deployed contract address below<br />
                         <strong>Step 3:</strong> Fill in details and register
                     </p>
                 </div>
@@ -131,17 +167,16 @@ export default function RegisterAppletModal({ isOpen, onClose, onSuccess }: Regi
                 <form onSubmit={handleRegister} className="p-6 space-y-4">
                     {/* Contract Address */}
                     <div>
-                        <label className="block text-sm text-gray-400 mb-2">
-                            Contract Address *
-                        </label>
+                        <label className="block text-sm text-gray-400 mb-2">Contract Address *</label>
                         <input
                             type="text"
                             value={contractAddress}
                             onChange={(e) => setContractAddress(e.target.value)}
                             placeholder="aaaaaa..."
                             required
-                            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white font-mono text-sm focus:outline-none focus:border-blue-500"
+                            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white font-mono text-sm focus:outline-none focus:border-blue-500"
                         />
+                        <p className="text-xs text-gray-500 mt-1">The on-chain address of your deployed applet</p>
                     </div>
 
                     {/* Name */}
@@ -171,7 +206,7 @@ export default function RegisterAppletModal({ isOpen, onClose, onSuccess }: Regi
 
                     {/* Price */}
                     <div>
-                        <label className="block text-sm text-gray-400 mb-2">Price per call (ETH)</label>
+                        <label className="block text-sm text-gray-400 mb-2">Price per call (YTK)</label>
                         <input
                             type="number"
                             step="0.001"
@@ -249,7 +284,7 @@ export default function RegisterAppletModal({ isOpen, onClose, onSuccess }: Regi
                         </button>
                         <button
                             type="submit"
-                            disabled={isRegistering || !contractAddress || !name || !isConnected}
+                            disabled={isRegistering || !name || !contractAddress || !isConnected}
                             className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isRegistering ? "Registering..." : "Register Applet"}

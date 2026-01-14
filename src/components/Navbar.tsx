@@ -34,7 +34,7 @@ export default function Navbar() {
                     <div className="flex items-center gap-3 ml-4">
                         <span className="text-xs text-gray-400 font-mono bg-gray-800 px-3 py-1.5 rounded-full flex items-center gap-2">
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                            {address?.slice(0, 8)}...{address?.slice(-6)}
+                            {typeof address === 'string' ? `${address.slice(0, 8)}...${address.slice(-6)}` : 'Connected'}
                         </span>
                         <button
                             onClick={() => disconnect()}
@@ -117,7 +117,7 @@ export default function Navbar() {
                             <div className="flex flex-col gap-3">
                                 <span className="text-sm text-gray-400 font-mono bg-gray-800 px-4 py-2 rounded-lg text-center flex items-center justify-center gap-2">
                                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                    {address?.slice(0, 8)}...{address?.slice(-6)}
+                                    {typeof address === 'string' ? `${address.slice(0, 8)}...${address.slice(-6)}` : 'Connected'}
                                 </span>
                                 <button
                                     onClick={() => { disconnect(); setIsMobileMenuOpen(false); }}
