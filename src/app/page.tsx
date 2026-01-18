@@ -95,7 +95,7 @@ export default function Home() {
 
           <h1 className="text-7xl sm:text-8xl md:text-9xl font-black tracking-tighter mb-8 text-white relative z-10 drop-shadow-[0_0_50px_rgba(255,255,255,0.2)]">
             WeilChain <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-purple-600 animate-gradient-xy">Nexus</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600">Nexus</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-12 font-light drop-shadow-md">
@@ -130,18 +130,46 @@ export default function Home() {
       </header>
 
       {/* TRUST INDICATORS (Replaces Fake Stats) */}
-      <Section className="bg-[#050505] py-24 border-y border-white/5 relative overflow-hidden group">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#1a1a2e_0%,_#000000_100%)] opacity-50" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
-        <div className="max-w-7xl mx-auto px-4 text-center relative z-10">
-          <p className="text-gray-500 text-sm font-bold tracking-widest uppercase mb-12">Building the Future of Compute</p>
-          <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-60 hover:opacity-100 transition-all duration-500">
-            {/* Abstract Partner Logos / Trust Badges */}
-            {['SECURE', 'VERIFIABLE', 'SCALABLE', 'DECENTRALIZED'].map((badge) => (
-              <div key={badge} className="flex items-center gap-3 group/item cursor-default">
-                <div className="w-2 h-2 bg-gray-500 rounded-full group-hover/item:bg-cyan-400 group-hover/item:shadow-[0_0_10px_cyan] transition-all" />
-                <span className="text-xl font-bold tracking-tighter text-gray-400 group-hover/item:text-white transition-colors">{badge}</span>
-              </div>
+      <Section className="bg-[#050505] py-32 border-y border-white/5 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#1a202c_0%,_#000000_60%)] opacity-40" />
+
+        {/* Animated Background Mesh */}
+        <div className="absolute inset-0 opacity-20 bg-[linear-gradient(45deg,rgba(255,255,255,0.03)_25%,transparent_25%,transparent_75%,rgba(255,255,255,0.03)_75%,rgba(255,255,255,0.03)),linear-gradient(45deg,rgba(255,255,255,0.03)_25%,transparent_25%,transparent_75%,rgba(255,255,255,0.03)_75%,rgba(255,255,255,0.03))] bg-[size:20px_20px]" />
+
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-gray-200 via-white to-gray-400">Institutional Grade Infrastructure</h2>
+            <p className="text-gray-500 text-sm font-bold tracking-widest uppercase">The Foundation of the Next Web</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { title: 'SECURE', icon: (props: any) => <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" {...props} />, desc: "Audited & Proven" },
+              { title: 'VERIFIABLE', icon: (props: any) => <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" {...props} />, desc: "On-Chain Proofs" },
+              { title: 'SCALABLE', icon: (props: any) => <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" {...props} />, desc: "Infinite Throughput" },
+              { title: 'DECENTRALIZED', icon: (props: any) => <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" {...props} />, desc: "Community Owned" }
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="relative group p-8 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-cyan-500/30 transition-all duration-300 backdrop-blur-sm"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 mb-4 rounded-xl bg-gradient-to-br from-gray-800 to-black border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-cyan-500/50 transition-all shadow-lg group-hover:shadow-cyan-500/20">
+                    <svg className="w-6 h-6 text-gray-400 group-hover:text-cyan-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      {item.icon({})}
+                    </svg>
+                  </div>
+                  <span className="text-lg font-bold text-white mb-1 tracking-tight">{item.title}</span>
+                  <span className="text-xs text-gray-500 uppercase tracking-wider font-medium group-hover:text-cyan-400/80 transition-colors">{item.desc}</span>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -152,7 +180,7 @@ export default function Home() {
         {/* Background Elements */}
         <div className="absolute inset-0 bg-[#08080a]" />
         <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-blue-900/10 to-transparent" />
-        <div className="absolute -left-[10%] top-[20%] w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[100px]" />
+        <div className="absolute -left-[10%] top-[20%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[100px]" />
 
         <motion.div style={{ y: yFeatures }} className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center gap-16 relative z-10">
           <div className="flex-1 space-y-8">
@@ -175,8 +203,8 @@ export default function Home() {
                 <h3 className="text-xl font-bold mb-2 text-white">Instant Monetization</h3>
                 <p className="text-sm text-gray-400">Publish your algorithm once. Get paid in YTK every time someone executes it.</p>
               </div>
-              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/30 hover:bg-white/10 transition-all backdrop-blur-sm group">
-                <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 text-purple-400 group-hover:text-purple-300 group-hover:scale-110 transition-all">
+              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:bg-white/10 transition-all backdrop-blur-sm group">
+                <div className="w-12 h-12 bg-cyan-500/10 rounded-lg flex items-center justify-center mb-4 text-cyan-400 group-hover:text-cyan-300 group-hover:scale-110 transition-all">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-white">Cryptographic Verification</h3>
@@ -196,7 +224,7 @@ export default function Home() {
                 >
                   <div className="flex justify-between items-start">
                     <div className="w-8 h-8 rounded bg-white/5 group-hover:bg-cyan-500/20 transition-colors" />
-                    <div className="px-2 py-1 bg-green-900/20 text-green-400 text-[10px] font-bold rounded border border-green-500/20">VERIFIED</div>
+                    <div className="px-2 py-1 bg-cyan-900/20 text-cyan-400 text-[10px] font-bold rounded border border-cyan-500/20">VERIFIED</div>
                   </div>
                   <div className="space-y-2">
                     <div className="h-2 w-3/4 bg-white/5 rounded group-hover:bg-cyan-500/20 transition-colors" />

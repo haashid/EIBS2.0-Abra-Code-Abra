@@ -39,7 +39,7 @@ export default function Navbar() {
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-3 group">
                     {/* User logo from public/nexus logo.png */}
-                    <img src="/nexus%20logo.png" alt="WeilChain Logo" className="w-8 h-8 object-contain" />
+                    <img src="/nexus%20logo.png" alt="WeilChain Logo" className="w-12 h-12 object-contain" />
                     <span className="text-xl font-bold tracking-tight text-white group-hover:text-cyan-400 transition-colors">
                         WeilChain <span className="text-cyan-500 font-light">Nexus</span>
                     </span>
