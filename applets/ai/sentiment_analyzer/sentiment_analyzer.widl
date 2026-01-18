@@ -1,0 +1,14 @@
+interface SentimentAnalyzer {
+    constructor new() -> Result<Self, String>;
+    
+    query analyze(text: String) -> Result<SentimentResult, String>;
+    query execute(input: String) -> Result<String, String>;
+    query tools() -> String;
+    query prompts() -> String;
+}
+
+struct SentimentResult {
+    sentiment: String,
+    score: f64,
+    confidence: f64
+}

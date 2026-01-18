@@ -3,14 +3,24 @@
 import Link from "next/link";
 import { useWeil } from "@/context/WeilProvider";
 import { useEffect, useState } from "react";
+import { useTokenBalance } from "@/hooks/useYutakaToken";
+import { formatEther } from "viem";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
     const { address, isConnected, connect, disconnect, isConnecting, error } = useWeil();
     const [mounted, setMounted] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Fetch token balance if connected
+    const { balance, isLoading: balanceLoading } = useTokenBalance(address || "");
 
     useEffect(() => {
         setMounted(true);
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
     const handleConnect = async () => {
@@ -18,136 +28,150 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="sticky top-0 z-40 flex items-center justify-between p-4 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
-            {/* Logo */}
-            <Link href="/" className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent shrink-0">
-                WeilChain Nexus
-            </Link>
+        <motion.nav
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'py-4 bg-[#030305]/80 backdrop-blur-xl border-b border-white/5' : 'py-6 bg-transparent'}`}
+            initial={{ y: -100 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
+            <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+                {/* Logo */}
+                {/* Logo */}
+                <Link href="/" className="flex items-center gap-3 group">
+                    {/* User logo from public/nexus logo.png */}
+                    <img src="/nexus%20logo.png" alt="WeilChain Logo" className="w-8 h-8 object-contain" />
+                    <span className="text-xl font-bold tracking-tight text-white group-hover:text-cyan-400 transition-colors">
+                        WeilChain <span className="text-cyan-500 font-light">Nexus</span>
+                    </span>
+                </Link>
 
-            {/* Desktop Navigation - Hidden on mobile/tablet */}
-            <div className="hidden xl:flex items-center gap-6">
-                <Link href="/marketplace" className="text-gray-400 hover:text-white transition-colors text-sm">Marketplace</Link>
-                <Link href="/pipeline" className="text-gray-400 hover:text-white transition-colors text-sm">Pipeline</Link>
-                <Link href="/history" className="text-gray-400 hover:text-white transition-colors text-sm">History</Link>
+                {/* Desktop Navigation */}
+                <div className="hidden xl:flex items-center gap-8">
+                    <NavLink href="/marketplace">Marketplace</NavLink>
+                    <NavLink href="/pipeline">Pipeline</NavLink>
+                    <NavLink href="/history">History</NavLink>
+                </div>
 
-                {mounted && isConnected ? (
-                    <div className="flex items-center gap-3 ml-4">
-                        <span className="text-xs text-gray-400 font-mono bg-gray-800 px-3 py-1.5 rounded-full flex items-center gap-2">
-                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                            {typeof address === 'string' ? `${address.slice(0, 8)}...${address.slice(-6)}` : 'Connected'}
-                        </span>
+                {/* Actions */}
+                <div className="hidden xl:flex items-center gap-4">
+                    {mounted && isConnected ? (
+                        <div className="flex items-center gap-3">
+                            {balance > 0 && (
+                                <div className="hidden md:flex flex-col items-end mr-2">
+                                    <span className="text-[10px] text-gray-500 uppercase tracking-wider font-mono">Balance</span>
+                                    <span className="text-sm font-medium font-mono text-cyan-400">
+                                        {balanceLoading ? "..." : Number(formatEther(BigInt(balance))).toFixed(4)} YTK
+                                    </span>
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
+                                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse" />
+                                <span className="text-xs font-mono text-gray-300">
+                                    {typeof address === 'string' ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}
+                                </span>
+                            </div>
+
+                            <button
+                                onClick={() => disconnect()}
+                                className="text-xs text-gray-500 hover:text-red-400 transition-colors uppercase tracking-wider font-medium"
+                            >
+                                Disconnect
+                            </button>
+                        </div>
+                    ) : (
                         <button
-                            onClick={() => disconnect()}
-                            className="px-3 py-1.5 text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
+                            onClick={handleConnect}
+                            disabled={isConnecting}
+                            className="relative group px-6 py-2 bg-white text-black rounded-lg font-bold text-sm overflow-hidden transition-all hover:scale-105"
                         >
-                            Disconnect
+                            <span className="relative z-10 flex items-center gap-2">
+                                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+                                {!isConnecting && (
+                                    <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                )}
+                            </span>
                         </button>
-                    </div>
-                ) : (
-                    <button
-                        onClick={handleConnect}
-                        disabled={isConnecting}
-                        className="ml-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-lg text-base font-semibold transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-blue-500/20"
-                    >
-                        {isConnecting ? (
-                            <>
-                                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
-                                Connecting...
-                            </>
+                    )}
+                </div>
+
+                {/* Mobile Menu Toggle */}
+                <button
+                    className="xl:hidden p-2 text-white/70 hover:text-white transition-colors"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {isMobileMenuOpen ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                         ) : (
-                            <>
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                                Connect WAuth
-                            </>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
                         )}
-                    </button>
-                )}
+                    </svg>
+                </button>
             </div>
 
-            {/* Mobile Hamburger Button - Visible on mobile/tablet */}
-            <button
-                className="xl:hidden p-2 text-gray-400 hover:text-white transition-colors"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                aria-label="Toggle menu"
-            >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    {isMobileMenuOpen ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    )}
-                </svg>
-            </button>
+            {/* Mobile Menu */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="xl:hidden border-t border-white/5 bg-[#030305] overflow-hidden"
+                    >
+                        <div className="px-6 py-8 flex flex-col gap-4">
+                            <MobileNavLink href="/marketplace" onClick={() => setIsMobileMenuOpen(false)}>Marketplace</MobileNavLink>
+                            <MobileNavLink href="/pipeline" onClick={() => setIsMobileMenuOpen(false)}>Pipeline</MobileNavLink>
+                            <MobileNavLink href="/history" onClick={() => setIsMobileMenuOpen(false)}>History</MobileNavLink>
 
-            {/* Mobile Menu Overlay */}
-            {isMobileMenuOpen && (
-                <div className="absolute top-full left-0 right-0 bg-gray-900 border-b border-gray-800 p-4 flex flex-col gap-2 xl:hidden z-50 shadow-2xl">
-                    <Link
-                        href="/marketplace"
-                        className="text-base text-gray-300 hover:text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        Marketplace
-                    </Link>
-                    <Link
-                        href="/pipeline"
-                        className="text-base text-gray-300 hover:text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        Pipeline
-                    </Link>
-                    <Link
-                        href="/history"
-                        className="text-base text-gray-300 hover:text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        History
-                    </Link>
+                            <div className="h-px bg-white/5 my-2" />
 
-                    <div className="border-t border-gray-800 mt-2 pt-4">
-                        {error && (
-                            <p className="text-red-400 text-sm mb-3 px-4">{error}</p>
-                        )}
-                        {mounted && isConnected ? (
-                            <div className="flex flex-col gap-3">
-                                <span className="text-sm text-gray-400 font-mono bg-gray-800 px-4 py-2 rounded-lg text-center flex items-center justify-center gap-2">
-                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                    {typeof address === 'string' ? `${address.slice(0, 8)}...${address.slice(-6)}` : 'Connected'}
-                                </span>
+                            {mounted && isConnected ? (
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-500">Wallet</span>
+                                        <span className="font-mono text-sm text-gray-300">{typeof address === 'string' ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => { disconnect(); setIsMobileMenuOpen(false); }}
+                                        className="w-full py-3 bg-red-500/10 text-red-400 rounded-lg text-sm font-medium"
+                                    >
+                                        Disconnect
+                                    </button>
+                                </div>
+                            ) : (
                                 <button
-                                    onClick={() => { disconnect(); setIsMobileMenuOpen(false); }}
-                                    className="w-full px-4 py-3 text-sm font-medium text-red-400 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors"
+                                    onClick={() => { handleConnect(); setIsMobileMenuOpen(false); }}
+                                    className="w-full py-3 bg-white text-black rounded-lg text-sm font-bold"
                                 >
-                                    Disconnect Wallet
+                                    Connect Wallet
                                 </button>
-                            </div>
-                        ) : (
-                            <button
-                                onClick={() => { handleConnect(); setIsMobileMenuOpen(false); }}
-                                disabled={isConnecting}
-                                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {isConnecting ? (
-                                    <>
-                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                        </svg>
-                                        Connecting...
-                                    </>
-                                ) : (
-                                    <>Connect WAuth</>
-                                )}
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
-        </nav>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.nav>
+    );
+}
+
+function NavLink({ href, children }: { href: string, children: React.ReactNode }) {
+    return (
+        <Link href={href} className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group">
+            {children}
+            <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-white transition-all group-hover:w-full" />
+        </Link>
+    );
+}
+
+function MobileNavLink({ href, onClick, children }: { href: string, onClick: () => void, children: React.ReactNode }) {
+    return (
+        <Link
+            href={href}
+            onClick={onClick}
+            className="text-lg font-medium text-gray-300 hover:text-white"
+        >
+            {children}
+        </Link>
     );
 }

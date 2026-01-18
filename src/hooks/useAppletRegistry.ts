@@ -17,6 +17,9 @@ export interface ContractApplet {
     input_schema: string;
     output_schema: string;
     owner: string;
+    wasm_cid?: string;  // IPFS CID for WASM file
+    widl_cid?: string;  // IPFS CID for WIDL file
+    purchase_price?: number;  // Price to buy/download applet files
 }
 
 // Hook to read all applets from the contract
@@ -27,9 +30,9 @@ export function useApplets() {
     const [error, setError] = useState<string | null>(null);
 
     const refetch = useCallback(async () => {
-        // Only fetch if connected with a wallet and have registry address
+        // Require wallet connection to query (until public endpoint is available)
         if (!isConnected || !wallet || !REGISTRY_ADDRESS) {
-            // Return silently - wallet not connected yet
+            console.log("[Applets] Wallet not connected or no registry address");
             return;
         }
 
@@ -41,21 +44,45 @@ export function useApplets() {
 
             console.log("[Applets] Querying get_all_applets from:", contractToQuery);
 
-            // Try get_all_applets directly
+            // Query registry  
             const result = await queryContract(contractToQuery, "get_all_applets", {});
 
             console.log("[Applets] get_all_applets raw result:", result);
             console.log("[Applets] result type:", typeof result);
             console.log("[Applets] result is array:", Array.isArray(result));
+            if (result) {
+                console.log("[Applets] result.Ok:", result.Ok, "| type:", typeof result.Ok);
+                console.log("[Applets] result.data:", result.data, "| type:", typeof result.data);
+            }
 
             // Handle various response formats
             let appletList: any[] = [];
+
             if (Array.isArray(result)) {
                 appletList = result;
-            } else if (result?.Ok && Array.isArray(result.Ok)) {
-                appletList = result.Ok;
-            } else if (result?.data && Array.isArray(result.data)) {
-                appletList = result.data;
+            } else if (result?.Ok) {
+                // Ok might contain array directly or as JSON string
+                if (Array.isArray(result.Ok)) {
+                    appletList = result.Ok;
+                } else if (typeof result.Ok === 'string') {
+                    try {
+                        const parsed = JSON.parse(result.Ok);
+                        appletList = Array.isArray(parsed) ? parsed : [];
+                    } catch (e) {
+                        console.error("[Applets] Failed to parse Ok string:", e);
+                    }
+                }
+            } else if (result?.data) {
+                if (Array.isArray(result.data)) {
+                    appletList = result.data;
+                } else if (typeof result.data === 'string') {
+                    try {
+                        const parsed = JSON.parse(result.data);
+                        appletList = Array.isArray(parsed) ? parsed : [];
+                    } catch (e) {
+                        console.error("[Applets] Failed to parse data string:", e);
+                    }
+                }
             }
 
             console.log("[Applets] Parsed list:", appletList);
@@ -65,10 +92,15 @@ export function useApplets() {
                 name: applet.name || `Applet ${i}`,
                 description: applet.description || "",
                 applet_address: applet.applet_address || "",
+                // Keep as raw Wei number/string for components to handle
                 price: Number(applet.price) || 0,
                 input_schema: applet.input_schema || "JSON",
                 output_schema: applet.output_schema || "JSON",
                 owner: applet.owner || "",
+                wasm_cid: applet.wasm_cid,
+                widl_cid: applet.widl_cid,
+                // Keep as raw Wei
+                purchase_price: Number(applet.purchase_price) || 0,
             }));
 
             console.log("[Applets] Mapped applets:", fetchedApplets);
@@ -83,10 +115,10 @@ export function useApplets() {
 
     // Auto-fetch when wallet connects
     useEffect(() => {
-        if (isConnected && wallet) {
+        if (isConnected && wallet && REGISTRY_ADDRESS) {
             refetch();
         }
-    }, [isConnected, wallet, refetch]);
+    }, [isConnected, wallet, REGISTRY_ADDRESS, refetch]);
 
     return {
         applets,
@@ -144,13 +176,25 @@ export function useRegisterApplet() {
 
             console.log("Registration result:", result);
 
+            // Validate transaction result before declaring success
+            if (result?.Err || result?.error) {
+                const errMsg = result.Err || result.error || 'Unknown error';
+                throw new Error(`Registration failed: ${errMsg}`);
+            }
+
             // Extract transaction hash if available
             if (result && result.transaction_id) {
                 setTxHash(result.transaction_id);
             }
 
+            // Only set success if we got a valid result (no error)
             setIsConfirming(true);
+
+            // Brief delay to allow chain confirmation (WeilChain is fast)
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             setIsSuccess(true);
+            console.log("Registration confirmed successfully");
         } catch (err: any) {
             const msg = err.message || JSON.stringify(err);
             setError(msg);

@@ -149,52 +149,71 @@ export function WeilProvider({ children }: { children: ReactNode }) {
     }, [wallet, isConnected]);
 
     const queryContract = useCallback(async (
-        contractAddress: string,
-        method: string,
-        args: any
+        address: string,
+        methodName: string,
+        args: Record<string, any> = {}
     ): Promise<any> => {
-        if (!wallet) {
-            throw new Error("Wallet not available");
-        }
+        // If wallet is available, use it
+        if (wallet) {
+            const response = await (wallet as any).contracts.execute(
+                address,
+                methodName,
+                args
+            );
 
-        // For queries, might need contracts.query or similar
-        const response = await (wallet as any).contracts.execute(
-            contractAddress,
-            method,
-            args
-        );
+            console.log("[WeilSDK] query raw response:", response);
+            console.log("[WeilSDK] response keys:", response ? Object.keys(response) : 'null');
 
-        console.log("[WeilSDK] query raw response:", response);
-        console.log("[WeilSDK] response keys:", response ? Object.keys(response) : 'null');
-
-        // Log potential data fields
-        if (response) {
-            console.log("[WeilSDK] response.result:", response.result);
-            console.log("[WeilSDK] response.data:", response.data);
-            console.log("[WeilSDK] response.txn_result:", response.txn_result);
-            console.log("[WeilSDK] response.payload:", response.payload);
-            console.log("[WeilSDK] response.contracts:", response.contracts);
-        }
-
-        // Extract actual result from SDK response wrapper - try many fields
-        if (response?.result !== undefined) return response.result;
-        if (response?.data !== undefined) return response.data;
-        if (response?.txn_result !== undefined) {
-            // txn_result might be JSON string or object
-            if (typeof response.txn_result === 'string') {
-                try {
-                    return JSON.parse(response.txn_result);
-                } catch {
-                    return response.txn_result;
-                }
+            // Log potential data fields
+            if (response) {
+                console.log("[WeilSDK] response.txn_result:", response.txn_result);
+                console.log("[WeilSDK] response.result:", response.result);
+                console.log("[WeilSDK] response.data:", response.data);
             }
-            return response.txn_result;
+
+            // Extract actual result from SDK response wrapper
+            // IMPORTANT: Check txn_result FIRST (has actual query data)
+            if (response?.txn_result !== undefined) {
+                // txn_result might be JSON string or object
+                let txnResult = response.txn_result;
+
+                if (typeof txnResult === 'string') {
+                    try {
+                        txnResult = JSON.parse(txnResult);
+                    } catch {
+                        return txnResult;
+                    }
+                }
+
+                // Check if txnResult has Ok field (common pattern)
+                if (txnResult?.Ok !== undefined) {
+                    // Ok might also be a JSON string
+                    if (typeof txnResult.Ok === 'string') {
+                        try {
+                            return JSON.parse(txnResult.Ok);
+                        } catch {
+                            return txnResult.Ok;
+                        }
+                    }
+                    return txnResult.Ok;
+                }
+
+                return txnResult;
+            }
+
+            // Fallbacks for other response formats
+            if (response?.result !== undefined) return response.result;
+            if (response?.data !== undefined) return response.data;
+            if (response?.Ok !== undefined) return response.Ok;
+            if (response?.value !== undefined) return response.value;
+            if (response?.payload !== undefined) return response.payload;
+            return response;
         }
-        if (response?.Ok !== undefined) return response.Ok;
-        if (response?.value !== undefined) return response.value;
-        if (response?.payload !== undefined) return response.payload;
-        if (response?.contracts !== undefined) return response.contracts;
-        return response;
+
+        // Fallback for public queries without wallet
+        console.log("[WeilProvider] Querying without wallet (public read):", { address, methodName, args });
+
+        throw new Error("Public queries without wallet not yet implemented. Please connect wallet.");
     }, [wallet]);
 
     const value: WeilContextType = {

@@ -1,0 +1,15 @@
+
+record ValidationResult {
+    is_valid: bool,
+    is_json: bool,
+    field_count: uint,
+    has_required_fields: bool,
+    error_message: string,
+    validation_id: uint
+}
+
+interface DataValidator {
+    query func get_validation_count() -> uint;
+    mutate func execute(input: string) -> string;
+    mutate func validate_json(data: string, required_fields: string) -> ValidationResult
+}

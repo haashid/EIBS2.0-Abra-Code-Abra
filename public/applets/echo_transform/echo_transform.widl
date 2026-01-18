@@ -1,0 +1,16 @@
+
+record TransformResult {
+    original: string,
+    uppercase: string,
+    lowercase: string,
+    reversed: string,
+    length: uint,
+    transform_id: uint
+}
+
+interface EchoTransform {
+    query func get_transform_count() -> uint;
+    mutate func execute(input: string) -> string;
+    mutate func transform(text: string) -> TransformResult;
+    query func echo(text: string) -> string
+}

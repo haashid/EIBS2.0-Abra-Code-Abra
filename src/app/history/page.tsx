@@ -3,12 +3,15 @@
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import { useWeil } from "@/context/WeilProvider";
+import { useMockData, ExecutionLog } from "@/context/MockDataContext";
+import { useApplets } from "@/hooks/useAppletRegistry";
 
 // Interface for on-chain execution records
 interface ExecutionRecord {
     id: string;
     pipelineId: string;
     appletIds: number[];
+    appletNames?: string[]; // Added for display
     totalPrice: string;
     timestamp: number;
     status: string;
@@ -17,7 +20,11 @@ interface ExecutionRecord {
 function ClientDate({ timestamp }: { timestamp: number }) {
     const [date, setDate] = useState<string>("");
     useEffect(() => {
-        setDate(new Date(timestamp * 1000).toLocaleString());
+        if (timestamp <= 0) {
+            setDate("Unknown Date");
+        } else {
+            setDate(new Date(timestamp * 1000).toLocaleString());
+        }
     }, [timestamp]);
     return <>{date || "..."}</>;
 }
@@ -28,52 +35,140 @@ export default function HistoryPage() {
     const [isLoading, setIsLoading] = useState(false);
 
     const LOGGER_ADDRESS = process.env.NEXT_PUBLIC_WEIL_LOGGER_ADDRESS || "";
+    const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_WEIL_REGISTRY_ADDRESS || "";
+
+    // Local Mock Data Hook
+    const { executions: localExecutions } = useMockData();
+    const { applets: verifiedAppletsList } = useApplets(); // Fetch applet list for naming
 
     // Fetch execution history from on-chain logger
     useEffect(() => {
+        let isMounted = true;
+
         async function fetchHistory() {
-            if (!isConnected || !wallet || !LOGGER_ADDRESS) return;
+            let fetchedExecutions: ExecutionRecord[] = [];
 
-            setIsLoading(true);
-            try {
-                // First get total count
-                const countResult = await queryContract(LOGGER_ADDRESS, "get_execution_count", {});
-                const count = Number(countResult) || 0;
+            // 1. Fetch On-Chain Data (if connected and contracts exist)
+            if (isConnected && wallet && LOGGER_ADDRESS) {
+                // setIsLoading(true); // Don't block UI with full loading if local data exists
+                try {
+                    console.log("Fetching execution count from Logger...");
+                    const countResult = await queryContract(LOGGER_ADDRESS, "get_execution_count", {});
 
-                if (count === 0) {
-                    setExecutions([]);
-                    return;
-                }
-
-                // Fetch each execution by ID (IDs start at 0)
-                const fetchedExecutions: ExecutionRecord[] = [];
-                for (let i = 0; i < Math.min(count, 50); i++) {
-                    try {
-                        const exec = await queryContract(LOGGER_ADDRESS, "get_execution", { id: i });
-                        if (exec && !exec.Err) {
-                            const data = exec.Ok || exec;
-                            fetchedExecutions.push({
-                                id: String(data.id ?? i),
-                                pipelineId: `pipeline-${i}`,
-                                appletIds: data.applet_ids_json ? JSON.parse(data.applet_ids_json) : [],
-                                totalPrice: String(data.total_price || 0),
-                                timestamp: Number(data.timestamp || 0),
-                                status: "completed"
-                            });
-                        }
-                    } catch (err) {
-                        console.log(`Execution ${i} not found`);
+                    let count = 0;
+                    if (typeof countResult === 'number') {
+                        count = countResult;
+                    } else if (countResult?.Ok !== undefined) {
+                        count = Number(countResult.Ok);
+                    } else if (countResult?.data !== undefined) {
+                        count = Number(countResult.data);
                     }
+
+                    console.log(`Found ${count} on-chain executions.`);
+
+                    if (count > 0) {
+                        // Fetch applet registry for name mapping
+                        console.log("Fetching applet registry for names...");
+                        let appletMap: Record<number, string> = {};
+                        try {
+                            const registryResult = await queryContract(REGISTRY_ADDRESS, "get_all_applets", {});
+                            let applets: any[] = [];
+                            if (Array.isArray(registryResult)) {
+                                applets = registryResult;
+                            } else if (registryResult?.Ok) {
+                                try {
+                                    if (typeof registryResult.Ok === 'string') {
+                                        applets = JSON.parse(registryResult.Ok);
+                                    } else if (Array.isArray(registryResult.Ok)) {
+                                        applets = registryResult.Ok;
+                                    }
+                                } catch (e) {
+                                    console.warn("[History] Failed to parse applets JSON:", e);
+                                }
+                            }
+                            if (Array.isArray(applets)) {
+                                applets.forEach((applet: any) => {
+                                    const id = Number(applet.token_id !== undefined ? applet.token_id : (applet.id || 0));
+                                    appletMap[id] = applet.name || `Applet ${id}`;
+                                });
+                            }
+                        } catch (err) { console.warn("Could not fetch applet names:", err); }
+
+                        const startId = count;
+                        const endId = Math.max(1, count - 19);
+
+                        for (let i = startId; i >= endId; i--) {
+                            if (!isMounted) return;
+                            try {
+                                const exec = await queryContract(LOGGER_ADDRESS, "get_execution", { id: i });
+                                let data: any = null;
+                                if (exec?.Ok) data = exec.Ok;
+                                else if (exec && !exec.Err && !exec.error) data = exec;
+
+                                if (data) {
+                                    let appletIds: number[] = [];
+                                    try {
+                                        appletIds = data.applet_ids_json ? JSON.parse(data.applet_ids_json) : [];
+                                    } catch (e) { }
+
+                                    const appletNames = appletIds.map(id => appletMap[id] || `ID: ${id}`);
+                                    const priceInWei = Number(data.total_price || 0);
+                                    const formattedPrice = (priceInWei / 1e18).toFixed(18).replace(/\.?0+$/, '') || '0';
+                                    const timestamp = Number(data.timestamp || 0);
+
+                                    fetchedExecutions.push({
+                                        id: String(data.id ?? i),
+                                        pipelineId: data.result_hash || `pipeline-${i}`,
+                                        appletIds: appletIds,
+                                        appletNames: appletNames,
+                                        totalPrice: formattedPrice,
+                                        timestamp: timestamp,
+                                        status: "Completed (On-Chain)"
+                                    });
+                                }
+                            } catch (err) { console.warn(`Execution ${i} fetch failed:`, err); }
+                        }
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch on-chain history:", err);
                 }
-                setExecutions(fetchedExecutions);
-            } catch (err) {
-                console.error("Failed to fetch execution history:", err);
-            } finally {
+            }
+
+            // 2. Merge Local Execution Logs
+            // Map local executions to matching format
+            const mappedLocalExecutions: ExecutionRecord[] = localExecutions.map((local: ExecutionLog) => {
+                // Try to resolve names from Verified Applet List if currently available
+                const names = local.appletIds.map((id: number) => {
+                    // Try to find in verified list or hardcoded map
+                    // Simple fallback for demo
+                    const demoNames: Record<number, string> = {
+                        1: "Text Processor", 2: "Hash Generator", 3: "Data Validator",
+                        4: "Echo Transform", 5: "ASCII Art NFT", 6: "Arithmetic MCP"
+                    };
+                    return demoNames[id] || `Applet ${id}`;
+                });
+
+                return {
+                    id: `local-${local.id}`,
+                    pipelineId: local.pipelineId,
+                    appletIds: local.appletIds,
+                    appletNames: names,
+                    totalPrice: local.totalPrice,
+                    timestamp: local.timestamp,
+                    status: "Completed (Local/Demo)"
+                };
+            });
+
+            if (isMounted) {
+                // deduplicate if necessary, but IDs should be distinct (string vs 'local-')
+                setExecutions([...fetchedExecutions, ...mappedLocalExecutions]);
                 setIsLoading(false);
             }
         }
+
         fetchHistory();
-    }, [isConnected, wallet, queryContract, LOGGER_ADDRESS]);
+        return () => { isMounted = false; };
+    }, [isConnected, wallet, queryContract, LOGGER_ADDRESS, REGISTRY_ADDRESS, localExecutions]);
 
     // Sort executions by timestamp (newest first)
     const displayHistory = [...executions].sort((a, b) => b.timestamp - a.timestamp);
@@ -116,7 +211,7 @@ export default function HistoryPage() {
                                         <th className="p-4 lg:p-6 border-b border-gray-800">Execution ID</th>
                                         <th className="p-4 lg:p-6 border-b border-gray-800">Pipeline Hash</th>
                                         <th className="p-4 lg:p-6 border-b border-gray-800">Applets Used</th>
-                                        <th className="p-4 lg:p-6 border-b border-gray-800">Cost (NXS)</th>
+                                        <th className="p-4 lg:p-6 border-b border-gray-800">Cost (YTK)</th>
                                         <th className="p-4 lg:p-6 border-b border-gray-800">Time</th>
                                         <th className="p-4 lg:p-6 border-b border-gray-800">Status</th>
                                     </tr>
@@ -128,9 +223,9 @@ export default function HistoryPage() {
                                             <td className="p-4 lg:p-6 font-mono text-gray-500 text-xs">{exec.pipelineId.slice(0, 10)}...</td>
                                             <td className="p-4 lg:p-6">
                                                 <div className="flex flex-wrap gap-2">
-                                                    {exec.appletIds.map((id, i) => (
+                                                    {(exec.appletNames || exec.appletIds.map(id => `ID: ${id}`)).map((name, i) => (
                                                         <span key={i} className="px-2 py-1 bg-gray-800 rounded text-xs font-medium border border-gray-700">
-                                                            ID: {id}
+                                                            {name}
                                                         </span>
                                                     ))}
                                                 </div>
@@ -172,7 +267,7 @@ export default function HistoryPage() {
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-gray-500">Cost</span>
-                                            <span className="font-mono font-bold text-white">{exec.totalPrice} NXS</span>
+                                            <span className="font-mono font-bold text-white">{exec.totalPrice} YTK</span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-gray-500">Time</span>
@@ -183,9 +278,9 @@ export default function HistoryPage() {
                                         <div className="pt-2">
                                             <span className="text-gray-500 block mb-2">Applets Used</span>
                                             <div className="flex flex-wrap gap-2">
-                                                {exec.appletIds.map((id, i) => (
+                                                {(exec.appletNames || exec.appletIds.map(id => `ID: ${id}`)).map((name, i) => (
                                                     <span key={i} className="px-2 py-1 bg-gray-800 rounded text-xs font-medium border border-gray-700">
-                                                        ID: {id}
+                                                        {name}
                                                     </span>
                                                 ))}
                                             </div>

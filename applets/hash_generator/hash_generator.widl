@@ -1,0 +1,14 @@
+
+record HashProof {
+    input_length: uint,
+    hash_sha256: string,
+    hash_simple: string,
+    timestamp: uint,
+    proof_id: uint
+}
+
+interface HashGenerator {
+    query func get_proof_count() -> uint;
+    mutate func execute(input: string) -> string;
+    mutate func generate_hash(data: string) -> HashProof
+}

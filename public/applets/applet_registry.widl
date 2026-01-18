@@ -1,0 +1,34 @@
+// Applet details stored for each applet
+record AppletDetails {
+    token_id: string,
+    name: string,
+    description: string,
+    applet_address: string,
+    price: u64,
+    input_schema: string,
+    output_schema: string,
+    owner: string,
+    is_active: bool
+}
+
+interface AppletRegistry {
+    // Query functions
+    query func name() -> string;
+    query func get_applet(id: uint) -> result<AppletDetails, string>;
+    query func get_all_applets() -> list<AppletDetails>;
+    query func get_applet_count() -> uint;
+    
+    // Applet registration
+    mutate func register_applet(
+        name: string,
+        description: string,
+        applet_address: string,
+        price: u64,
+        input_schema: string,
+        output_schema: string
+    ) -> result<uint, string>;
+    
+    // Management
+    mutate func update_price(id: uint, new_price: u64) -> result<(), string>;
+    mutate func toggle_active(id: uint) -> result<(), string>;
+}

@@ -1,0 +1,35 @@
+// Execution result returned to user
+record ExecutionResult {
+    success: bool,
+    output: string,
+    tokens_spent: u64
+}
+
+// Listed applet info
+record ListedApplet {
+    token_id: string,
+    name: string,
+    description: string,
+    applet_address: string,
+    price: u64,
+    input_schema: string,
+    output_schema: string,
+    owner: string
+}
+
+interface Marketplace {
+    // Query functions
+    query func get_token_contract() -> string;
+    query func get_registry_contract() -> string;
+    query func get_all_listed_applets() -> list<ListedApplet>;
+    query func get_applet_price(applet_id: string) -> result<u64, string>;
+    query func get_total_executions() -> u64;
+    
+    // Admin functions
+    mutate func set_token_contract(address: string);
+    mutate func set_registry_contract(address: string);
+    
+    // User functions
+    mutate func execute_applet(applet_id: string, input: string) -> result<ExecutionResult, string>;
+    mutate func execute_pipeline(applet_ids: list<string>, initial_input: string) -> result<ExecutionResult, string>;
+}

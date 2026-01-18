@@ -97,9 +97,29 @@ export function useWeilLogger() {
         }
     }, [queryContract, loggerAddress]);
 
+    // Get execution count for specific applet
+    const getAppletExecutionCount = useCallback(async (appletId: number): Promise<number> => {
+        if (!loggerAddress) {
+            return 0;
+        }
+
+        try {
+            // Try querying specific applet stats (if supported by contract)
+            const result = await queryContract(loggerAddress, "get_applet_execution_count", {
+                applet_id: appletId
+            });
+            return Number(result) || 0;
+        } catch (err: any) {
+            // Fallback: This method might not exist on all contract versions
+            console.warn(`Failed to get applet execution count for #${appletId}:`, err.message);
+            return 0;
+        }
+    }, [queryContract, loggerAddress]);
+
     return {
         getMyExecutionCount,
         getTotalExecutionCount,
+        getAppletExecutionCount,
         logExecution,
         getExecutionById,
         isLoading,

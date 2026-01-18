@@ -1,0 +1,16 @@
+
+record Execution {
+    id: uint,
+    user: string,
+    applet_ids_json: string,
+    total_price: uint,
+    result_hash: string,
+    timestamp: uint
+}
+
+interface ExecutionLogger {
+    query func get_execution_count() -> uint;
+    query func get_execution(id: uint) -> result<Execution, string>;
+    query func get_user_execution_count(user: string) -> uint;
+    mutate func log_execution(applet_ids_json: string, total_price: uint, result_hash: string) -> uint
+}

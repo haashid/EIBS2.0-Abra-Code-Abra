@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "wadk/**",
+    "wadk-0.1.0/**",
+    "deploy_applets/**",
+    "scripts/**"
   ]),
 ]);
 

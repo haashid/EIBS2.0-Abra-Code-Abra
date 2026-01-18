@@ -3,11 +3,15 @@ name = "text_processor"
 version = "0.1.0"
 edition = "2021"
 
-[workspace]
-
 [lib]
 crate-type = ["cdylib"]
 
+[dependencies]
+weil_rs.workspace = true
+weil_macros.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
 [profile.release]
-opt-level = "z"
+opt-level = "s"
 lto = true

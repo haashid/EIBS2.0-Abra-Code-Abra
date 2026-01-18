@@ -31,8 +31,8 @@ trait AppletRegistry {
         input_schema: String,
         output_schema: String,
     ) -> Result<u32, String>;
-    async fn update_price(&mut self, id: u32, new_price: u64) -> bool;
-    async fn toggle_active(&mut self, id: u32) -> bool;
+    async fn update_price(&mut self, id: u32, new_price: u64) -> Result<(), String>;
+    async fn toggle_active(&mut self, id: u32) -> Result<(), String>;
 }
 
 #[derive(Serialize, Deserialize, WeilType)]
@@ -113,36 +113,36 @@ impl AppletRegistry for AppletRegistryContractState {
     }
 
     #[mutate]
-    async fn update_price(&mut self, id: u32, new_price: u64) -> bool {
+    async fn update_price(&mut self, id: u32, new_price: u64) -> Result<(), String> {
         let sender = Runtime::sender();
         
         if (id as usize) >= self.applets.len() {
-            return false;
+            return Err("Applet not found".to_string());
         }
         
         let applet = &self.applets[id as usize];
         if applet.owner != sender {
-            return false;
+            return Err("Not authorized: only owner can update price".to_string());
         }
         
         self.applets[id as usize].price = new_price;
-        true
+        Ok(())
     }
 
     #[mutate]
-    async fn toggle_active(&mut self, id: u32) -> bool {
+    async fn toggle_active(&mut self, id: u32) -> Result<(), String> {
         let sender = Runtime::sender();
         
         if (id as usize) >= self.applets.len() {
-            return false;
+            return Err("Applet not found".to_string());
         }
         
         let applet = &self.applets[id as usize];
         if applet.owner != sender {
-            return false;
+            return Err("Not authorized: only owner can toggle active status".to_string());
         }
         
         self.applets[id as usize].is_active = !self.applets[id as usize].is_active;
-        true
+        Ok(())
     }
 }

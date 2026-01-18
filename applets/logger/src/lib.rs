@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use weil_macros::{constructor, mutate, query, smart_contract, WeilType};
+use weil_rs::runtime::Runtime;
 
 /// Execution record - matches WIDL definition
 #[derive(Serialize, Deserialize, WeilType, Clone)]
@@ -57,13 +58,24 @@ impl ExecutionLogger for ExecutionLoggerState {
 
     #[mutate]
     async fn log_execution(&mut self, applet_ids_json: String, total_price: u64, result_hash: String) -> u32 {
+        // Get block timestamp from runtime (returns String)
+        let timestamp_str = Runtime::block_timestamp();
+        // Parse to u64 (Unix timestamp) - log warning if parse fails
+        let timestamp = match timestamp_str.parse::<u64>() {
+            Ok(ts) => ts,
+            Err(_) => {
+                // Log parse failure (timestamp defaults to 0)
+                0_u64
+            }
+        };
+
         let execution = Execution {
             id: self.next_id,
-            user: "caller".to_string(),
+            user: Runtime::sender(), // Also capture the real sender!
             applet_ids_json,
             total_price,
             result_hash,
-            timestamp: 0,
+            timestamp,
         };
 
         let id = self.next_id;

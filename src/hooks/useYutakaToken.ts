@@ -67,13 +67,58 @@ export function useTokenBalance(address?: string) {
         setIsLoading(true);
         setError(null);
         try {
-            const result = await queryContract(TOKEN_ADDRESS, "balance_for", {
-                addr: targetAddress,
-            });
-            setBalance(result || 0);
+            // Ensure we have a string address (handle if it's an object)
+            let addrString = targetAddress;
+            if (typeof targetAddress === 'object' && targetAddress !== null) {
+                // Extract address string from object if needed
+                addrString = (targetAddress as any).address || (targetAddress as any).toString?.() || String(targetAddress);
+            }
+
+            console.log(`[Token Balance] Fetching for address:`, addrString);
+
+            // Try calling with just the address string
+            const result = await queryContract(TOKEN_ADDRESS, "balance_for", { addr: addrString });
+
+            console.log("[Token Balance] Raw result:", result);
+
+            // Parse the result - handle various return formats
+            let bal = 0;
+
+            // Check for error first - gracefully return 0 but indicate error
+            if (result?.Err || result?.error || result?.status === 'failure') {
+                const errMsg = result?.Err || result?.error || result?.message || 'Unknown error';
+                console.warn("[Token Balance] Query returned error (using 0 balance):", errMsg);
+                setBalance(0); // Graceful fallback
+                setError(`Balance unavailable: ${errMsg}`); // WARNING-1 FIX: Set error indicator
+                return;
+            }
+
+            // Try to extract the balance value
+            if (typeof result === 'number') {
+                bal = result;
+            } else if (typeof result === 'string' && !isNaN(Number(result))) {
+                bal = Number(result);
+            } else if (result?.Ok !== undefined) {
+                bal = Number(result.Ok);
+            } else if (result?.data !== undefined) {
+                bal = typeof result.data === 'object' ? Number(result.data.balance || result.data.value || 0) : Number(result.data);
+            } else if (result?.result !== undefined) {
+                bal = Number(result.result);
+            } else if (result?.value !== undefined) {
+                bal = Number(result.value);
+            } else {
+                // Last resort - try to convert whatever we got
+                const numResult = Number(result);
+                bal = isNaN(numResult) ? 0 : numResult;
+            }
+
+            console.log("[Token Balance] Parsed balance:", bal);
+            setBalance(bal);
         } catch (err: any) {
-            setError(err.message);
-            console.error("Failed to fetch balance:", err);
+            const msg = err.message || JSON.stringify(err);
+            setError(msg);
+            console.error("[Token Balance] Failed to fetch:", err);
+            setBalance(0); // Set to 0 on error so UI shows something
         } finally {
             setIsLoading(false);
         }

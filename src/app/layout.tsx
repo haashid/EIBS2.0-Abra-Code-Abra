@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { WeilProvider } from "@/context/WeilProvider";
+import { MockDataProvider } from "@/context/MockDataContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,7 +30,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <WeilProvider>
-          {children}
+          <MockDataProvider>
+            {children}
+          </MockDataProvider>
         </WeilProvider>
       </body>
     </html>

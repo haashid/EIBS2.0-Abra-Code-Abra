@@ -71,7 +71,7 @@ export default function PipelineBuilder({ availableApplets, onExecute, isConnect
                         >
                             <div className="flex justify-between items-center">
                                 <span className="font-medium text-gray-200 group-hover:text-blue-400">{applet.name}</span>
-                                <span className="text-xs font-mono text-gray-400">{formatEther(applet.price)} ETH</span>
+                                <span className="text-xs font-mono text-gray-400">{formatEther(applet.price)} YTK</span>
                             </div>
                         </button>
                     ))}
@@ -172,18 +172,18 @@ export default function PipelineBuilder({ availableApplets, onExecute, isConnect
                     <div className="mt-8 border-t border-gray-800 pt-6">
                         <div className="flex justify-between items-center mb-6">
                             <span className="text-gray-400">Total Cost</span>
-                            <span className="text-2xl font-bold text-white font-mono">{formatEther(totalPrice)} ETH</span>
+                            <span className="text-2xl font-bold text-white font-mono">{formatEther(totalPrice)} YTK</span>
                         </div>
 
                         <button
                             onClick={() => onExecute(pipeline.map(p => p.id), totalPrice, inputData)}
-                            disabled={pipeline.length === 0 || !isConnected}
-                            className={`w-full py-4 font-bold rounded-xl transition-all shadow-lg ${pipeline.length > 0 && isConnected
+                            disabled={pipeline.length === 0 || !inputData.trim()}
+                            className={`w-full py-4 font-bold rounded-xl transition-all shadow-lg ${pipeline.length > 0 && inputData.trim()
                                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90 hover:shadow-blue-500/25'
                                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                 }`}
                         >
-                            {!isConnected ? "Connect Wallet to Execute" : "Execute Pipeline"}
+                            {!inputData.trim() ? "Enter input data to execute" : !isConnected ? "Execute Pipeline (Demo Mode)" : "Execute Pipeline"}
                         </button>
                     </div>
                 </div>

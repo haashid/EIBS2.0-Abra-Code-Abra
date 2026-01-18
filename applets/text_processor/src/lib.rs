@@ -1,79 +1,72 @@
-//! TextProcessor Applet - On-chain text processing
-//! 
-//! Simple WASM applet that can be deployed to WeilChain
+use serde::{Deserialize, Serialize};
+use weil_macros::{constructor, mutate, query, smart_contract, WeilType};
 
-use std::ffi::{CStr, CString};
-use std::os::raw::c_char;
-
-/// Allocate memory for FFI
-#[no_mangle]
-pub extern "C" fn alloc(len: usize) -> *mut u8 {
-    let mut buf = Vec::with_capacity(len);
-    let ptr = buf.as_mut_ptr();
-    std::mem::forget(buf);
-    ptr
+/// Result of text processing
+#[derive(Serialize, Deserialize, WeilType, Clone)]
+pub struct TextStats {
+    pub word_count: u32,
+    pub char_count: u32,
+    pub line_count: u32,
+    pub avg_word_length: f32,
+    pub input_hash: String,
 }
 
-/// Free memory for FFI
-#[no_mangle]
-pub extern "C" fn dealloc(ptr: *mut u8, len: usize) {
-    unsafe {
-        drop(Vec::from_raw_parts(ptr, 0, len));
+/// Contract state
+#[derive(Serialize, Deserialize, WeilType)]
+pub struct TextProcessorState {
+    total_processed: u32,
+}
+
+trait TextProcessor {
+    fn new() -> Result<Self, String> where Self: Sized;
+    async fn get_stats(&self) -> u32;
+    async fn execute(&mut self, input: String) -> String;
+    async fn process_text(&mut self, text: String) -> TextStats;
+}
+
+#[smart_contract]
+impl TextProcessor for TextProcessorState {
+    #[constructor]
+    fn new() -> Result<Self, String> where Self: Sized {
+        Ok(TextProcessorState {
+            total_processed: 0,
+        })
     }
-}
 
-/// Count words in the given text
-#[no_mangle]
-pub extern "C" fn word_count(text_ptr: *const c_char) -> u64 {
-    let text = unsafe { CStr::from_ptr(text_ptr).to_string_lossy() };
-    text.split_whitespace().count() as u64
-}
+    #[query]
+    async fn get_stats(&self) -> u32 {
+        self.total_processed
+    }
 
-/// Count characters in the given text
-#[no_mangle]
-pub extern "C" fn char_count(text_ptr: *const c_char) -> u64 {
-    let text = unsafe { CStr::from_ptr(text_ptr).to_string_lossy() };
-    text.chars().count() as u64
-}
+    #[mutate]
+    async fn execute(&mut self, input: String) -> String {
+        let stats = self.process_text(input).await;
+        serde_json::to_string(&stats).unwrap_or_else(|_| "Error".to_string())
+    }
 
-/// Convert text to uppercase and return pointer
-#[no_mangle]
-pub extern "C" fn to_uppercase(text_ptr: *const c_char) -> *mut c_char {
-    let text = unsafe { CStr::from_ptr(text_ptr).to_string_lossy() };
-    let result = text.to_uppercase();
-    CString::new(result).unwrap().into_raw()
-}
-
-/// Reverse the text and return pointer
-#[no_mangle]
-pub extern "C" fn reverse_text(text_ptr: *const c_char) -> *mut c_char {
-    let text = unsafe { CStr::from_ptr(text_ptr).to_string_lossy() };
-    let result: String = text.chars().rev().collect();
-    CString::new(result).unwrap().into_raw()
-}
-
-/// Process text and return JSON result
-#[no_mangle]
-pub extern "C" fn process(text_ptr: *const c_char) -> *mut c_char {
-    let text = unsafe { CStr::from_ptr(text_ptr).to_string_lossy() };
-    
-    let word_count = text.split_whitespace().count();
-    let char_count = text.chars().count();
-    let uppercase = text.to_uppercase();
-    let reversed: String = text.chars().rev().collect();
-    
-    let json = format!(
-        r#"{{"word_count":{},"char_count":{},"uppercase":"{}","reversed":"{}"}}"#,
-        word_count, char_count, uppercase, reversed
-    );
-    
-    CString::new(json).unwrap().into_raw()
-}
-
-/// Free a returned string
-#[no_mangle]
-pub extern "C" fn free_string(ptr: *mut c_char) {
-    if !ptr.is_null() {
-        unsafe { drop(CString::from_raw(ptr)); }
+    #[mutate]
+    async fn process_text(&mut self, text: String) -> TextStats {
+        self.total_processed += 1;
+        
+        let char_count = text.len() as u32;
+        let line_count = text.lines().count() as u32;
+        let words: Vec<&str> = text.split_whitespace().collect();
+        let word_count = words.len() as u32;
+        
+        let avg_word_length = if word_count > 0 {
+            words.iter().map(|w| w.len()).sum::<usize>() as f32 / word_count as f32
+        } else {
+            0.0
+        };
+        
+        let input_hash = format!("{:x}", text.bytes().fold(0u64, |acc, b| acc.wrapping_add(b as u64).wrapping_mul(31)));
+        
+        TextStats {
+            word_count,
+            char_count,
+            line_count,
+            avg_word_length,
+            input_hash,
+        }
     }
 }

@@ -1,7 +1,12 @@
 [workspace]
 members = [
-   "registry",
-   "logger",
+    "registry",
+    "applet_registry",
+    "logger",
+    "text_processor",
+    "hash_generator",
+    "data_validator",
+    "echo_transform",
 ]
 
 resolver = "2"

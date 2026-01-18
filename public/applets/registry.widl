@@ -1,0 +1,18 @@
+
+record Applet {
+    id: uint,
+    name: string,
+    description: string,
+    price: uint,
+    owner: string,
+    input_schema: string,
+    output_schema: string,
+    is_active: bool
+}
+
+interface AppletRegistry {
+    query func get_applet_count() -> uint;
+    query func get_applet(id: uint) -> result<Applet, string>;
+    mutate func register_applet(name: string, description: string, price: uint, input_schema: string, output_schema: string) -> uint;
+    mutate func toggle_applet_status(id: uint)
+}

@@ -9,6 +9,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
+name = "applet_registry"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serde",
+ "serde_json",
+ "weil_contracts",
+ "weil_macros",
+ "weil_rs",
+]
+
+[[package]]
 name = "async-executor"
 version = "1.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -56,6 +68,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
+name = "data_validator"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "weil_macros",
+ "weil_rs",
+]
+
+[[package]]
+name = "echo_transform"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "weil_macros",
+ "weil_rs",
+]
+
+[[package]]
 name = "fastrand"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -84,6 +116,16 @@ dependencies = [
  "futures-io",
  "parking",
  "pin-project-lite",
+]
+
+[[package]]
+name = "hash_generator"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "weil_macros",
+ "weil_rs",
 ]
 
 [[package]]
@@ -232,6 +274,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "text_processor"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "weil_macros",
+ "weil_rs",
 ]
 
 [[package]]
