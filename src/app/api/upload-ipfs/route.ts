@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+import crypto from 'crypto';
 
-const FILEBASE_RPC_ENDPOINT = process.env.NEXT_PUBLIC_FILEBASE_RPC_ENDPOINT || 'https://rpc.filebase.io';
-const FILEBASE_RPC_KEY = process.env.NEXT_PUBLIC_FILEBASE_RPC_KEY || '';
+const FILEBASE_ACCESS_KEY = process.env.FILEBASE_ACCESS_KEY || '';
+const FILEBASE_SECRET_KEY = process.env.FILEBASE_SECRET_KEY || '';
+const FILEBASE_BUCKET = process.env.FILEBASE_BUCKET || 'weilchain-applets';
 
 export async function POST(req: NextRequest) {
     try {
-        if (!FILEBASE_RPC_KEY) {
+        if (!FILEBASE_ACCESS_KEY || !FILEBASE_SECRET_KEY) {
             return NextResponse.json(
-                { error: 'Filebase credentials not configured on server' },
+                { error: 'Filebase credentials not configured' },
                 { status: 500 }
             );
         }
@@ -22,39 +26,50 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        console.log(`[Proxy] Uploading ${buffer.byteLength} bytes to Filebase IPFS...`);
+        console.log(`[Upload API] Uploading ${buffer.byteLength} bytes to Filebase...`);
 
-        // Forward strict request to Filebase
-        // Note: Filebase expects 'multipart/form-data' usually for /ipfs endpoint 
-        // OR raw body if Content-Type is set. The previous implementation used octet-stream.
-        // Let's try to maintain what the client was trying to do but from backend.
+        // Generate filename from content hash
+        const hash = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
+        const extension = req.headers.get('x-file-extension') || 'bin';
+        const fileName = `${hash.substring(0, 16)}.${extension}`;
 
-        const response = await fetch(`${FILEBASE_RPC_ENDPOINT}/ipfs`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${FILEBASE_RPC_KEY}`,
-                'Content-Type': 'application/octet-stream',
-            },
-            body: buffer,
+        // Create S3 client for Filebase
+        const s3Client = new S3Client({
+            endpoint: 'https://s3.filebase.com',
+            region: 'us-east-1',
+            credentials: {
+                accessKeyId: FILEBASE_ACCESS_KEY,
+                secretAccessKey: FILEBASE_SECRET_KEY
+            }
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[Proxy] Filebase error:', response.status, errorText);
-            return NextResponse.json(
-                { error: `Filebase upload failed: ${errorText}` },
-                { status: response.status }
-            );
-        }
+        // Upload to Filebase
+        const upload = new Upload({
+            client: s3Client,
+            params: {
+                Bucket: FILEBASE_BUCKET,
+                Key: fileName,
+                Body: Buffer.from(buffer),
+                ContentType: extension === 'wasm' ? 'application/wasm' : 'text/plain'
+            }
+        });
 
-        const data = await response.json();
-        console.log('[Proxy] Filebase success:', data);
+        await upload.done();
 
-        return NextResponse.json(data);
+        console.log(`[Upload API] Success! File: ${fileName}`);
+
+        // Return CID (Filebase uses the S3 key as the path)
+        return NextResponse.json({
+            cid: fileName,
+            hash: hash,
+            size: buffer.byteLength,
+            url: `https://ipfs.filebase.io/ipfs/${fileName}`
+        });
+
     } catch (error: any) {
-        console.error('[Proxy] Internal error:', error);
+        console.error('[Upload API] Error:', error);
         return NextResponse.json(
-            { error: error.message || 'Internal server error' },
+            { error: error.message || 'Upload failed' },
             { status: 500 }
         );
     }

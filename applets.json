@@ -1,0 +1,77 @@
+[
+    {
+        "name": "arithmetic",
+        "wasm": "deploy_applets/arithmetic.wasm",
+        "widl": "deploy_applets/arithmetic.widl"
+    },
+    {
+        "name": "aurora",
+        "wasm": "deploy_applets/aurora.wasm",
+        "widl": "deploy_applets/aurora.widl"
+    },
+    {
+        "name": "bigquery",
+        "wasm": "deploy_applets/bigquery.wasm",
+        "widl": "deploy_applets/bigquery.widl"
+    },
+    {
+        "name": "confluence",
+        "wasm": "deploy_applets/confluence.wasm",
+        "widl": "deploy_applets/confluence.widl"
+    },
+    {
+        "name": "databricks",
+        "wasm": "deploy_applets/databricks.wasm",
+        "widl": "deploy_applets/databricks.widl"
+    },
+    {
+        "name": "datadog",
+        "wasm": "deploy_applets/datadog.wasm",
+        "widl": "deploy_applets/datadog.widl"
+    },
+    {
+        "name": "s3",
+        "wasm": "deploy_applets/s3.wasm",
+        "widl": "deploy_applets/s3.widl"
+    },
+    {
+        "name": "salesforce",
+        "wasm": "deploy_applets/salesforce.wasm",
+        "widl": "deploy_applets/salesforce.widl"
+    },
+    {
+        "name": "sap_hana",
+        "wasm": "deploy_applets/sap_hana.wasm",
+        "widl": "deploy_applets/sap_hana.widl"
+    },
+    {
+        "name": "secured_aurora",
+        "wasm": "deploy_applets/secured_aurora.wasm",
+        "widl": "deploy_applets/secured_aurora.widl"
+    },
+    {
+        "name": "servicenow",
+        "wasm": "deploy_applets/servicenow.wasm",
+        "widl": "deploy_applets/servicenow.widl"
+    },
+    {
+        "name": "snowflake",
+        "wasm": "deploy_applets/snowflake.wasm",
+        "widl": "deploy_applets/snowflake.widl"
+    },
+    {
+        "name": "sqs",
+        "wasm": "deploy_applets/sqs.wasm",
+        "widl": "deploy_applets/sqs.widl"
+    },
+    {
+        "name": "stocks",
+        "wasm": "deploy_applets/stocks.wasm",
+        "widl": "deploy_applets/stocks.widl"
+    },
+    {
+        "name": "twilio",
+        "wasm": "deploy_applets/twilio.wasm",
+        "widl": "deploy_applets/twilio.widl"
+    }
+]

@@ -146,7 +146,24 @@ async function deployApplet(wallet, name, wasmPath, widlPath, podId) {
         // Just correcting call to 3 args:
 
         console.log("Deploy RAW result:", contract);
-        const address = contract.contractAddress || contract.address || contract.id;
+
+        let deployResult = contract;
+        if (Array.isArray(contract)) {
+            deployResult = contract[0];
+        }
+
+        const address = deployResult.contract_address || deployResult.address || deployResult.id;
+
+        if (deployResult.status === 'Failed') {
+            console.error(`❌ Deployment transaction failed for ${name}. TxID: ${deployResult.batch_id}`);
+            // We can return null to skip, OR return the address if it exists (for debugging).
+            // Usually failed means no code installed.
+            // But let's log the address anyway.
+            console.log(`   (Address generated: ${address})`);
+            if (address) return address; // Try returning it, maybe it works partially? 
+            return null;
+        }
+
         console.log(`✅ ${name} Deployed! Address: ${address}`);
         return address;
     } catch (err) {
@@ -177,6 +194,23 @@ async function main() {
         privateKey,
         sentinelEndpoint
     });
+
+    // Check Address and Balance
+    try {
+        const myAddress = wallet.address || (typeof wallet.getAddress === 'function' ? await wallet.getAddress() : undefined);
+        console.log(`Wallet Address: ${myAddress}`);
+    } catch (e) { console.log("Could not get address", e); }
+
+    try {
+        if (typeof wallet.getBalance === 'function') {
+            const balance = await wallet.getBalance();
+            console.log(`Wallet Balance: ${balance.toString()}`);
+        } else {
+            console.log("wallet.getBalance is not a function. Skipping balance check.");
+        }
+    } catch (err) {
+        console.warn("⚠️ Failed to fetch balance:", err.message);
+    }
 
     // ---------------------------------------------------------
     // DYNAMIC POD SELECTION

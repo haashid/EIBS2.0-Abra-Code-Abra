@@ -23,12 +23,16 @@ export async function uploadToIPFS(file: File): Promise<UploadedFile> {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = new Uint8Array(arrayBuffer);
 
+        // Extract file extension
+        const extension = file.name.split('.').pop() || 'bin';
+
         // Upload to our local API proxy to avoid CORS
         // The proxy will forward to Filebase with proper credentials
         const response = await fetch('/api/upload-ipfs', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/octet-stream',
+                'X-File-Extension': extension,
             },
             body: buffer,
         });

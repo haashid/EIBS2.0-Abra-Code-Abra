@@ -347,7 +347,7 @@ function PipelineContent() {
         <div className="min-h-screen bg-black text-gray-200 font-sans selection:bg-blue-500/30 overflow-x-hidden">
             <Navbar />
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-40 pb-12">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">Pipeline Builder</h1>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 sm:mb-12">
                     <p className="text-gray-400 text-sm sm:text-base">Combine multiple applets into a powerful automated workflow.</p>

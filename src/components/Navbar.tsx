@@ -47,6 +47,15 @@ export default function Navbar() {
 
                 {/* Desktop Navigation */}
                 <div className="hidden xl:flex items-center gap-8">
+                    {/* External Tool CTA */}
+                    <a
+                        href="https://icarus.weilliptic.ai/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-black text-xs font-bold px-3 py-1.5 rounded-full hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all hover:scale-105 flex items-center gap-1.5"
+                    >
+                        <span>🚀 Deploy MCP</span>
+                    </a>
                     <NavLink href="/marketplace">Marketplace</NavLink>
                     <NavLink href="/pipeline">Pipeline</NavLink>
                     <NavLink href="/history">History</NavLink>
@@ -120,6 +129,14 @@ export default function Navbar() {
                         className="xl:hidden border-t border-white/5 bg-[#030305] overflow-hidden"
                     >
                         <div className="px-6 py-8 flex flex-col gap-4">
+                            <a
+                                href="https://icarus.weilliptic.ai/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-black rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                            >
+                                🚀 Deploy MCP Server
+                            </a>
                             <MobileNavLink href="/marketplace" onClick={() => setIsMobileMenuOpen(false)}>Marketplace</MobileNavLink>
                             <MobileNavLink href="/pipeline" onClick={() => setIsMobileMenuOpen(false)}>Pipeline</MobileNavLink>
                             <MobileNavLink href="/history" onClick={() => setIsMobileMenuOpen(false)}>History</MobileNavLink>

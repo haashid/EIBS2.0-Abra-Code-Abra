@@ -67,13 +67,10 @@ async function main() {
 
     const wallet = new WeilWallet({ privateKey, sentinelEndpoint });
 
-    // --- Dynamic Pod Discovery ---
-    // let podId = process.env.NEXT_PUBLIC_WEIL_POD_ID; 
-    let podId = null; // FORCE DISCOVERY to find a healthy pod
+    // Force discovery
+    let podId = null;
 
-    if (podId) {
-        console.log(`✅ Using Configured Pod ID: ${podId}`);
-    } else {
+    if (!podId) {
         try {
             console.log("🔍 Discovering active pods...");
             const pods = await wallet.pods.list();
@@ -84,51 +81,50 @@ async function main() {
                 podId = targetPod.podId;
             } else {
                 console.warn("⚠️ No pods returned. Using fallback POD.");
+                podId = 'POD_979092f2910044238c868e79fb01d8ff';
             }
         } catch (err) {
             console.warn("⚠️ Failed to list pods (using fallback):", err.message);
+            podId = 'POD_979092f2910044238c868e79fb01d8ff';
         }
     }
 
-    if (!podId) podId = 'POD_979092f2910044238c868e79fb01d8ff'; // Fallback
+    console.log(`Deploying TextProcessor to Pod: ${podId}`);
 
-    console.log(`Deploying Registry to Pod: ${podId}`);
+    const wasmPath = path.join(__dirname, '../applets/target/wasm32-unknown-unknown/release/text_processor.wasm');
+    const widlPath = path.join(__dirname, '../applets/text_processor/text_processor.widl');
 
-    const wasmPath = path.join(__dirname, '../applets/target/wasm32-unknown-unknown/release/applet_registry.wasm');
-    const widlPath = path.join(__dirname, '../applets/applet_registry/applet_registry.widl');
-
+    console.log(`Reading WASM: ${wasmPath}`);
     const wasmContent = fs.readFileSync(wasmPath);
     const widlContent = fs.readFileSync(widlPath, 'utf8');
     const wasmHex = wasmContent.toString('hex');
 
     try {
-        console.log("Deploying AppletRegistry...");
+        console.log("Deploying TextProcessor...");
         const deployResult = await wallet.contracts.deploy(
             wasmHex,
             widlContent,
             {
                 pods: [podId],
-                gasLimit: 100000000n, // High gas limit to prevent OOG
-                gasPrice: 1000000000n // Ensure it gets picked up
+                gasLimit: 100000000n,
+                gasPrice: 1000000000n
             }
         );
 
-        console.log("Registry Deploy RAW:", JSON.stringify(deployResult, null, 2));
-        const address = deployResult.contract_address || deployResult.address || deployResult.id || (Array.isArray(deployResult) ? deployResult[0]?.contract_address : null);
+        console.log("Deploy Result:", JSON.stringify(deployResult, null, 2));
 
         const status = deployResult.status || (Array.isArray(deployResult) ? deployResult[0]?.status : null);
+        const address = deployResult.contract_address || (Array.isArray(deployResult) ? deployResult[0]?.contract_address : null);
+
         if (status === 'Failed' || status === 'failure') {
-            console.error(`\n❌ REGISTRY DEPLOYMENT FAILED! Status: ${status}`);
-            // Try to print more info if available
+            console.error(`\n❌ DEPLOYMENT FAILED! Status: ${status}`);
         } else {
-            console.log(`\n✅ REGISTRY DEPLOYED SUCCESSFULLY!`);
+            console.log(`\n✅ TEXT PROCESSOR DEPLOYED!`);
+            console.log(`Address: ${address}`);
         }
-        console.log(`Address: ${address}`);
-        console.log(`\nPlease update NEXT_PUBLIC_WEIL_REGISTRY_ADDRESS in .env.local with this new address.`);
 
     } catch (err) {
-        console.error("❌ Deployment failed:", err.message);
-        if (err.response) console.error("Response:", err.response.data);
+        console.error("❌ Deployment exception:", err.message);
     }
 }
 

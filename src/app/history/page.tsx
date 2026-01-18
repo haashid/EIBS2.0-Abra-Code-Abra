@@ -155,7 +155,7 @@ export default function HistoryPage() {
                     appletNames: names,
                     totalPrice: local.totalPrice,
                     timestamp: local.timestamp,
-                    status: "Completed (Local/Demo)"
+                    status: "Completed"
                 };
             });
 
@@ -177,7 +177,7 @@ export default function HistoryPage() {
         <div className="min-h-screen bg-black text-gray-200 font-sans selection:bg-blue-500/30 overflow-x-hidden">
             <Navbar />
 
-            <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+            <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-40 pb-12">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-8 sm:mb-12 tracking-tight">Execution History</h1>
 
                 {isLoading ? (

@@ -11,9 +11,10 @@ interface AppletProps {
     onViewDetails?: (id: number) => void;
     executionCount?: number;
     isVerified?: boolean;
+    appletAddress?: string;
 }
 
-export default function AppletCard({ id, name, description, price, owner, isActive, onPurchase, onViewDetails, executionCount = 0, isVerified = false }: AppletProps) {
+export default function AppletCard({ id, name, description, price, owner, isActive, onPurchase, onViewDetails, executionCount = 0, isVerified = false, appletAddress }: AppletProps) {
     // Fallback verification logic for demo (if no dynamic data or strict mode)
     const showVerified = isVerified || ['text', 'hash', 'data', 'echo'].some(k => name.toLowerCase().includes(k));
 
@@ -35,6 +36,11 @@ export default function AppletCard({ id, name, description, price, owner, isActi
                                 )}
                             </h3>
                             <span className="text-xs text-gray-500 font-mono">ID: #{id}</span>
+                            {appletAddress && (
+                                <span className="text-[11px] text-blue-300/70 font-mono block mt-1 select-all" title={appletAddress}>
+                                    {appletAddress.slice(0, 10)}...
+                                </span>
+                            )}
                         </div>
                         <div className="flex flex-col items-end gap-1">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${isActive ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
