@@ -39,3 +39,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Security
+private_key.json
+wallet_setup.txt
+
+# Artifacts & Binaries
+cli
+widl
+*.tgz
+*.exe
+wadk/
+wadk-*/
+cache/
+deploy_*.log
+pods_list.txt
+*_help.txt
+

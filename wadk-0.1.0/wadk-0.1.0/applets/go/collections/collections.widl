@@ -1,4 +1,0 @@
-interface Collections{
-    query func get();
-    mutate func set()
-}
