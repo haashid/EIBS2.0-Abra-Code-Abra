@@ -24,11 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth overflow-x-hidden">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
       </head>
-      <body className={inter.className}>
+      <body className={inter.className + " overflow-x-hidden"}>
         <WeilProvider>
           <MockDataProvider>
             {children}
